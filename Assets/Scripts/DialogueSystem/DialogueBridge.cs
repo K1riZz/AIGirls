@@ -9,6 +9,7 @@ public class DialogueBridge : MonoBehaviour
         // 注册C#函数到Lua环境中，让Dialogue System可以调用
         Lua.RegisterFunction("ChangeAffection", this, SymbolExtensions.GetMethodInfo(() => ChangeAffection(0)));
         Lua.RegisterFunction("UnlockBehavior", this, SymbolExtensions.GetMethodInfo(() => UnlockBehavior("")));
+        Lua.RegisterFunction("TriggerGameEvent", this, SymbolExtensions.GetMethodInfo(() => TriggerGameEvent("")));
     }
 
     void OnDisable()
@@ -16,6 +17,7 @@ public class DialogueBridge : MonoBehaviour
         // 在对象销毁时注销，防止内存泄漏
         Lua.UnregisterFunction("ChangeAffection");
         Lua.UnregisterFunction("UnlockBehavior");
+        Lua.UnregisterFunction("TriggerGameEvent");
     }
 
     // --- 以下是可以在对话脚本中调用的函数 ---
@@ -45,6 +47,24 @@ public class DialogueBridge : MonoBehaviour
             Debug.Log($"尝试解锁行为: {behaviorName}");
             // 在这里实现具体的行为解锁逻辑
             // 例如: PetManager.Instance.ActivePet.BehaviorRegistry.Unlock(behaviorName);
+        }
+    }
+
+    /// <summary>
+    /// 在对话中触发一个全局游戏事件。用法: TriggerGameEvent("StartGacha")
+    /// </summary>
+    public void TriggerGameEvent(string eventName)
+    {
+        Debug.Log($"触发游戏事件: {eventName}");
+        switch (eventName)
+        {
+            case "StartGacha":
+                // 在这里调用你的抽卡系统逻辑
+                // GachaSystem.Instance.StartGacha();
+                break;
+            case "ShowPhoto":
+                // 在这里调用显示照片的UI逻辑
+                break;
         }
     }
 }
