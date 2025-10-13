@@ -47,7 +47,6 @@ public class DialogueBridge : MonoBehaviour
             Debug.Log($"尝试解锁行为: {behaviorName}");
             // 在这里实现具体的行为解锁逻辑
             // 例如: PetManager.Instance.ActivePet.BehaviorRegistry.Unlock(behaviorName);
-            PetManager.Instance.ActivePet.BehaviorRegistry.Unlock(behaviorName);
         }
     }
 
