@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9dca8f50160f9c4396da41e5372f057, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  petSpawnParent: {fileID: 634586927}
+  petSpawnParent: {fileID: 1801771869}
 --- !u!114 &433514831
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -286,10 +286,10 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!224 &634586927 stripped
+--- !u!224 &1801771869 stripped
 RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1735087958484633336, guid: 7d4ed0e4b75687e4e94ca447702ec682, type: 3}
-  m_PrefabInstance: {fileID: 4124035015230613259}
+  m_CorrespondingSourceObject: {fileID: 22425850, guid: 58ac37417e60e534f91138088a3e6f70, type: 3}
+  m_PrefabInstance: {fileID: 1978681496}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1978681496
 PrefabInstance:
