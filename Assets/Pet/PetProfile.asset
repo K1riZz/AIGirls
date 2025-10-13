@@ -22,4 +22,6 @@ MonoBehaviour:
   dialogueDatabase: {fileID: 0}
   startConversationTitle: 
   touchConversationTitle: 
-  idleChatterTitles: []
+  idleChatterTitles:
+  - Idle 1
+  - Idle 2
