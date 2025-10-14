@@ -1,4 +1,4 @@
-// --- PetProfileSO.cs ---
+
 using UnityEngine;
 using PixelCrushers.DialogueSystem; // Dialogue System的命名空间
 

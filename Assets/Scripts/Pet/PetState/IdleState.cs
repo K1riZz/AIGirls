@@ -56,6 +56,7 @@ public class IdleState : PetBaseState
             int index = Random.Range(0, controller.Profile.idleChatterTitles.Count);
             string conversationTitle = controller.Profile.idleChatterTitles[index];
             PixelCrushers.DialogueSystem.DialogueManager.StartConversation(conversationTitle, controller.transform);
+
         }
     }
 }

@@ -1,4 +1,3 @@
-// --- PetManager.cs ---
 using UnityEngine;
 
 public class PetManager : MonoBehaviour

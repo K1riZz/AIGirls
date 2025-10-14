@@ -19,9 +19,9 @@ MonoBehaviour:
   moveSpeed: 100
   idleTimeMin: 3
   idleTimeMax: 8
-  dialogueDatabase: {fileID: 0}
-  startConversationTitle: 
-  touchConversationTitle: 
+  dialogueDatabase: {fileID: 11400000, guid: b6650d703b8299540830153dce10cd09, type: 2}
+  startConversationTitle: StroyConversation1
+  touchConversationTitle: TouchConversation1
   idleChatterTitles:
   - Idle 1
   - Idle 2

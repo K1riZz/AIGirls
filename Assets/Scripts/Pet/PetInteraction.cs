@@ -1,4 +1,3 @@
-// --- PetInteraction.cs ---
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -13,6 +12,7 @@ public class PetInteraction : MonoBehaviour, IPointerClickHandler, IBeginDragHan
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        Debug.Log("Pet Clicked!");
         // 只在非拖拽状态下响应点击
         if (!eventData.dragging)
         {
@@ -22,6 +22,7 @@ public class PetInteraction : MonoBehaviour, IPointerClickHandler, IBeginDragHan
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        Debug.Log("Pet Draged!");
         controller.OnBeginDrag();
     }
 

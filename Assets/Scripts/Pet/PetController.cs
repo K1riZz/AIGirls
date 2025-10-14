@@ -43,9 +43,16 @@ public class PetController : MonoBehaviour
     // 由PetInteraction调用
     public void OnClicked()
     {
+        if (Profile == null)
+        {
+            Debug.LogError("PetController.Profile is null! Make sure it's initialized correctly from PetManager. Check if GameManager has a PetProfile assigned.", this);
+            return;
+        }
+
         // 触发一个简单的对话
         if (!string.IsNullOrEmpty(Profile.touchConversationTitle))
         {
+            Debug.Log($"Starting conversation: {Profile.touchConversationTitle}");
             PixelCrushers.DialogueSystem.DialogueManager.StartConversation(Profile.touchConversationTitle, this.transform);
         }
     }
