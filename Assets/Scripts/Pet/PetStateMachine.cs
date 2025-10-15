@@ -1,4 +1,3 @@
-// --- PetStateMachine.cs ---
 using UnityEngine;
 
 public class PetStateMachine : MonoBehaviour
@@ -25,7 +24,7 @@ public class PetStateMachine : MonoBehaviour
     }
 }
 
-// --- PetBaseState.cs ---
+
 public abstract class PetBaseState
 {
     protected PetController controller;

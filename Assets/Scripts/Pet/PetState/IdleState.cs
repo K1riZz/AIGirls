@@ -7,20 +7,30 @@ public class IdleState : PetBaseState
 {
     private float idleTimer;
     private float idleDuration;
-    private float chatterTimer;
-    private float nextChatterTime;
+    
+    private float chatterTriggerTime = -1f; // 本次发呆期间触发闲聊的时间点, -1f代表不触发
+    private bool hasChattered = false; // 标记本次发呆是否已经聊过天了
 
     public IdleState(PetController controller) : base(controller) { }
+    
 
     public override void Enter()
     {
         Debug.Log("进入[发呆]状态");
-        controller.Animator.Play("Idle"); // 假设你有一个名为"Idle"的动画状态
+        controller.Animator.Play("Idle");
         idleDuration = Random.Range(controller.Profile.idleTimeMin, controller.Profile.idleTimeMax);
         idleTimer = 0f;
-
-        chatterTimer = 0f;
-        SetNextChatterTime();
+        hasChattered = false;
+        chatterTriggerTime = -1f;
+        
+        // 决定在本次发呆期间是否要闲聊 (例如，50%的几率)
+        // 并且确保有闲聊内容可说
+        if (Random.value < 0.5f && controller.Profile.idleChatterTitles.Count > 0)
+        {
+            // 在发呆持续时间内随机一个时间点来触发闲聊
+            // 为了避免在发呆快结束时才说话，可以稍微限制一下范围，比如在前80%的时间内
+            chatterTriggerTime = Random.Range(1f, idleDuration * 0.8f);
+        }
     }
 
     public override void Update()
@@ -32,30 +42,24 @@ public class IdleState : PetBaseState
             stateMachine.SwitchState(new WanderState(controller));
         }
 
-        // 处理闲聊逻辑
-        chatterTimer += Time.deltaTime;
-        if (chatterTimer >= nextChatterTime)
+        // 如果设置了闲聊时间，并且还没聊过，并且时间到了
+        if (chatterTriggerTime > 0 && !hasChattered && idleTimer >= chatterTriggerTime)
         {
             TryStartIdleChatter();
-            SetNextChatterTime(); // 重置计时器
+            hasChattered = true; // 标记为已聊过，防止重复触发
         }
-    }
-
-    private void SetNextChatterTime()
-    {
-        // 例如，设置下一次闲聊检查在10到30秒后
-        nextChatterTime = Random.Range(10f, 30f);
-        chatterTimer = 0f;
     }
 
     private void TryStartIdleChatter()
     {
-        // 检查对话是否正在进行，以及是否有可用的闲聊标题
-        if (!PixelCrushers.DialogueSystem.DialogueManager.IsConversationActive && controller.Profile.idleChatterTitles.Count > 0)
+        // 检查当前是否有其他对话正在进行
+        if (!PixelCrushers.DialogueSystem.DialogueManager.IsConversationActive)
         {
+            Debug.Log("尝试触发闲置闲聊...");
             int index = Random.Range(0, controller.Profile.idleChatterTitles.Count);
             string conversationTitle = controller.Profile.idleChatterTitles[index];
             PixelCrushers.DialogueSystem.DialogueManager.StartConversation(conversationTitle, controller.transform);
+            
 
         }
     }

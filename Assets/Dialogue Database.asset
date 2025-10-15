@@ -221,7 +221,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Dialogue Text
-        value: test
+        value: Idle test1
         type: 0
         typeString: 
       - title: Sequence
@@ -374,7 +374,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Dialogue Text
-        value: Test2
+        value: Idle Test2
         type: 0
         typeString: 
       - title: Sequence
@@ -397,7 +397,7 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 160
-        y: 80
+        y: 79
         width: 160
         height: 30
     entryGroups: []

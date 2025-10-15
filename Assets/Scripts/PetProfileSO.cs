@@ -1,6 +1,6 @@
 
 using UnityEngine;
-using PixelCrushers.DialogueSystem; // Dialogue System的命名空间
+using PixelCrushers.DialogueSystem; 
 
 [CreateAssetMenu(fileName = "NewPetProfile", menuName = "DesktopPet/Pet Profile")]
 public class PetProfileSO : ScriptableObject
