@@ -53,14 +53,14 @@ public class IdleState : PetBaseState
     private void TryStartIdleChatter()
     {
         // 检查当前是否有其他对话正在进行
-        if (!PixelCrushers.DialogueSystem.DialogueManager.IsConversationActive)
+        if (!DialogueManager.IsConversationActive && controller.Profile.idleChatterTitles.Count > 0)
         {
             Debug.Log("尝试触发闲置闲聊...");
             int index = Random.Range(0, controller.Profile.idleChatterTitles.Count);
             string conversationTitle = controller.Profile.idleChatterTitles[index];
-            PixelCrushers.DialogueSystem.DialogueManager.StartConversation(conversationTitle, controller.transform);
-            
-
+            // 改为使用Bark，它会使用宠物身上的StandardBarkUI
+            // Bark的第一个参数是对话标题，第二个是说话者
+            DialogueManager.Bark(conversationTitle, controller.transform);
         }
     }
 }

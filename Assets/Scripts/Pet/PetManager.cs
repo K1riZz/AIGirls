@@ -3,7 +3,7 @@ using UnityEngine;
 public class PetManager : MonoBehaviour
 {
     public static PetManager Instance { get; private set; }
-    
+
     public PetController ActivePet { get; private set; }
     public Transform petSpawnParent; // 宠物应该生成在哪个Canvas下
 
@@ -22,7 +22,7 @@ public class PetManager : MonoBehaviour
 
         if (profile.petPrefab != null)
         {
-            GameObject petInstance = Instantiate(profile.petPrefab, petSpawnParent);
+           GameObject petInstance = Instantiate(profile.petPrefab);
             ActivePet = petInstance.GetComponent<PetController>();
             if (ActivePet != null)
             {
@@ -35,3 +35,8 @@ public class PetManager : MonoBehaviour
         }
     }
 }
+
+
+
+
+

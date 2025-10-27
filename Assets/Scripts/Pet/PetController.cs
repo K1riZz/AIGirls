@@ -52,7 +52,8 @@ public class PetController : MonoBehaviour
         if (!string.IsNullOrEmpty(Profile.touchConversationTitle))
         {
             Debug.Log($"Starting conversation: {Profile.touchConversationTitle}");
-            PixelCrushers.DialogueSystem.DialogueManager.StartConversation(Profile.touchConversationTitle, this.transform);
+            // 将点击事件的对话也改为Bark
+            DialogueManager.Bark(Profile.touchConversationTitle, this.transform);
         }
     }
 
