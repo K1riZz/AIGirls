@@ -20,6 +20,9 @@ public class GameManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        // 添加Windows控制器，用于处理桌面化逻辑
+        gameObject.AddComponent<WindowsController>();
     }
 
     void Start()

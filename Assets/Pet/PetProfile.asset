@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   petID: pet_001
   petName: TYY
-  petPrefab: {fileID: 7741275472609477984, guid: 7d4ed0e4b75687e4e94ca447702ec682, type: 3}
+  petPrefab: {fileID: 3256666860274793993, guid: 524ef2537d7ce654b9feb5b029187fb5, type: 3}
   petAvatar: {fileID: 1193388614, guid: db733f50b3f2f334092e5efcc17b4916, type: 3}
   moveSpeed: 100
   idleTimeMin: 3

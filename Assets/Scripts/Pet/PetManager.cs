@@ -5,7 +5,6 @@ public class PetManager : MonoBehaviour
     public static PetManager Instance { get; private set; }
 
     public PetController ActivePet { get; private set; }
-    public Transform petSpawnParent; // 宠物应该生成在哪个Canvas下
 
     void Awake()
     {
@@ -22,8 +21,9 @@ public class PetManager : MonoBehaviour
 
         if (profile.petPrefab != null)
         {
-           GameObject petInstance = Instantiate(profile.petPrefab);
-            ActivePet = petInstance.GetComponent<PetController>();
+            GameObject petInstance = Instantiate(profile.petPrefab);
+            // PetController现在位于子对象上，所以使用GetComponentInChildren
+            ActivePet = petInstance.GetComponentInChildren<PetController>();
             if (ActivePet != null)
             {
                 ActivePet.Initialize(profile);
@@ -35,8 +35,3 @@ public class PetManager : MonoBehaviour
         }
     }
 }
-
-
-
-
-
