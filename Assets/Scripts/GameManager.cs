@@ -23,14 +23,29 @@ public class GameManager : MonoBehaviour
 
         // 添加Windows控制器，用于处理桌面化逻辑
         gameObject.AddComponent<WindowsController>();
+
+        // 订阅对话结束事件，用于从剧情模式切换回桌面模式
+        // 使用 += 来订阅事件
+        PixelCrushers.DialogueSystem.DialogueManager.Instance.conversationEnded += OnConversationEnded;
+       
     }
 
     void Start()
     {
         // 游戏开始时，根据当前选择的Profile生成宠物
-        if (currentPetProfile != null)
+        // 确保PetManager实例存在
+        if (currentPetProfile != null && PetManager.Instance != null)
         {
             PetManager.Instance.SpawnPet(currentPetProfile);
+        }
+    }
+
+    void OnDestroy()
+    {
+        // 在GameManager销毁时，取消订阅事件以防止内存泄漏
+        // 增加一个空值检查，因为DialogueManager可能已经被销毁
+        if (PixelCrushers.DialogueSystem.DialogueManager.instance != null) {
+            PixelCrushers.DialogueSystem.DialogueManager.Instance.conversationEnded -= OnConversationEnded;
         }
     }
 
@@ -74,5 +89,48 @@ public class GameManager : MonoBehaviour
             PersistentDataManager.ApplySaveData(saveData);
             Debug.Log("游戏已加载!");
         }
+    }
+
+    /// <summary>
+    /// 进入剧情模式。此方法由UI按钮调用。
+    /// </summary>
+    public void EnterStoryMode()
+    {
+        var pet = PetManager.Instance.ActivePet;
+        if (pet == null || DialogueManager.IsConversationActive) return;
+
+        Debug.Log("进入剧情模式...");
+
+        // 1. 禁用桌面模式AI和交互
+        if (pet.StateMachine != null) pet.StateMachine.enabled = false;
+        if (pet.GetComponent<PetInteraction>() != null) pet.GetComponent<PetInteraction>().enabled = false;
+        
+        // 让宠物回到站立的Idle动画，避免在剧情时还在走路或做其他动作
+        if (pet.Animator != null) pet.Animator.Play("Idle");
+
+        // 2. 开始剧情对话
+        // 我们使用PetProfile中定义的初始剧情对话
+        if (!string.IsNullOrEmpty(currentPetProfile.startConversationTitle))
+        {
+            DialogueManager.StartConversation(currentPetProfile.startConversationTitle, pet.transform);
+        }
+        else
+        {
+            Debug.LogWarning("PetProfile中没有指定 'startConversationTitle'，无法开始剧情模式。");
+        }
+    }
+
+    /// <summary>
+    /// 当任何一个正式对话（Conversation）结束时，此方法会被调用。
+    /// </summary>
+    private void OnConversationEnded(Transform actor)
+    {
+        Debug.Log("剧情模式结束，返回桌面模式...");
+        var pet = PetManager.Instance.ActivePet;
+        if (pet == null) return;
+
+        // 重新启用桌面模式AI和交互
+        if (pet.StateMachine != null) pet.StateMachine.enabled = true;
+        if (pet.GetComponent<PetInteraction>() != null) pet.GetComponent<PetInteraction>().enabled = true;
     }
 }

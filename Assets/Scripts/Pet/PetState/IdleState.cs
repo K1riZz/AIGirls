@@ -22,6 +22,11 @@ public class IdleState : PetBaseState
         idleTimer = 0f;
         hasChattered = false;
         chatterTriggerTime = -1f;
+
+        // 显示剧情模式按钮
+        if (controller.storyModeButton != null) {
+            controller.storyModeButton.SetActive(true);
+        }
         
         // 决定在本次发呆期间是否要闲聊 (例如，50%的几率)
         // 并且确保有闲聊内容可说
@@ -47,6 +52,14 @@ public class IdleState : PetBaseState
         {
             TryStartIdleChatter();
             hasChattered = true; // 标记为已聊过，防止重复触发
+        }
+    }
+
+    public override void Exit()
+    {
+        // 隐藏剧情模式按钮
+        if (controller.storyModeButton != null) {
+            controller.storyModeButton.SetActive(false);
         }
     }
 

@@ -12,6 +12,9 @@ public class PetController : MonoBehaviour
     public Animator Animator { get; private set; }
     public RectTransform RectTransform { get; private set; }
 
+    [Header("UI元素")]
+    public GameObject storyModeButton; // 在Inspector中指定剧情模式按钮
+
     public float Affection { get; set; }
     // 模拟的可移动桌面区域
     public Rect WalkableArea { get; set; }

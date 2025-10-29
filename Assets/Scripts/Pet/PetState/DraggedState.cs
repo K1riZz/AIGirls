@@ -10,6 +10,11 @@ public class DraggedState : PetBaseState
     {
         Debug.Log("进入[被拖拽]状态");
         controller.Animator.Play("Dragged"); // 假设你有一个名为"Dragged"的动画状态
+
+        // 确保剧情模式按钮在拖拽时是隐藏的
+        if (controller.storyModeButton != null) {
+            controller.storyModeButton.SetActive(false);
+        }
     }
 
     public override void Update()
