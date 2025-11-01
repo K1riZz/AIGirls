@@ -22,7 +22,16 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         // 添加Windows控制器，用于处理桌面化逻辑
-        gameObject.AddComponent<WindowsController>();
+        // 确保我们添加的是正确的、唯一的WindowsController
+        if (GetComponent<WindowsController>() == null) {
+            gameObject.AddComponent<WindowsController>();
+        }
+        
+        // 添加桌面输入追踪器，用于记录鼠标键盘次数
+        if (GetComponent<DesktopInputTracker>() == null)
+        {
+            gameObject.AddComponent<DesktopInputTracker>();
+        }
 
         // 订阅对话结束事件，用于从剧情模式切换回桌面模式
         // 使用 += 来订阅事件
@@ -37,6 +46,12 @@ public class GameManager : MonoBehaviour
         if (currentPetProfile != null && PetManager.Instance != null)
         {
             PetManager.Instance.SpawnPet(currentPetProfile);
+            
+            // 宠物生成后，立即为它设置初始的活动范围
+            if (PetManager.Instance.ActivePet != null)
+            {
+                PetManager.Instance.ActivePet.UpdateWalkableArea();
+            }
         }
     }
 
@@ -132,5 +147,8 @@ public class GameManager : MonoBehaviour
         // 重新启用桌面模式AI和交互
         if (pet.StateMachine != null) pet.StateMachine.enabled = true;
         if (pet.GetComponent<PetInteraction>() != null) pet.GetComponent<PetInteraction>().enabled = true;
+
+        // 关键：返回桌面模式时，立即重新计算并更新宠物的桌面活动范围
+        pet.UpdateWalkableArea();
     }
 }

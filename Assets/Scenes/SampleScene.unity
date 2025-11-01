@@ -421,7 +421,7 @@ PrefabInstance:
     - target: {fileID: 11426072, guid: 58ac37417e60e534f91138088a3e6f70, type: 3}
       propertyPath: displaySettings.dialogueUI
       value: 
-      objectReference: {fileID: 1884801533082028, guid: b85118f82c276504f859890a517fa02c, type: 3}
+      objectReference: {fileID: 1884801533082028, guid: 1783f972d444a09439f377ed47f240e0, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

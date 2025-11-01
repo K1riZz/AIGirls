@@ -34,19 +34,38 @@ public class PetController : MonoBehaviour
         // 初始化好感度等数值, 从Dialogue System的变量中读取
         Affection = DialogueLua.GetVariable("Affection").AsFloat;
 
-        // 由于现在是独立的Overlay Canvas，活动范围就是整个屏幕
-        // 为了防止宠物移出屏幕，我们需要从屏幕尺寸中减去宠物自身的大小
+        // 初始化状态机
+        StateMachine.Initialize(this);
+    }
+
+    /// <summary>
+    /// 根据当前的运行环境（编辑器或打包后的程序）更新宠物的可活动桌面范围。
+    /// 这个方法应该在每次进入桌面模式时调用，以确保活动范围的准确性。
+    /// </summary>
+    public void UpdateWalkableArea()
+    {
+        float screenWidth;
+        float screenHeight;
+
+#if UNITY_EDITOR
+        // 在编辑器中，我们使用主摄像机的像素尺寸来精确计算活动范围，以获得最准确的预览
+        // 这能确保宠物始终在Game窗口内活动
+        screenWidth = Camera.main.pixelWidth;
+        screenHeight = Camera.main.pixelHeight;
+#else
+        // 在打包后的程序中，我们使用整个显示器的分辨率
+        screenWidth = Screen.currentResolution.width;
+        screenHeight = Screen.currentResolution.height;
+#endif
+
         var petRect = RectTransform.rect;
         float halfWidth = petRect.width / 2;
         float halfHeight = petRect.height / 2;
 
-        // WalkableArea现在是宠物中心点可以移动的安全区域
         WalkableArea = new Rect(
-            halfWidth, halfHeight, 
-            Screen.width - petRect.width, Screen.height - petRect.height);
-
-        // 初始化状态机
-        StateMachine.Initialize(this);
+            halfWidth, halfHeight,
+            screenWidth - petRect.width, screenHeight - petRect.height);
+        Debug.Log($"[PetController] 更新活动范围为: {WalkableArea}");
     }
 
     // 由PetInteraction调用

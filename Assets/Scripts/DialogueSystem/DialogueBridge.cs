@@ -21,10 +21,8 @@ public class DialogueBridge : MonoBehaviour
     }
 
     // --- 以下是可以在对话脚本中调用的函数 ---
-
-    /// <summary>
     /// 在对话中改变宠物好感度。用法: ChangeAffection(10)
-    /// </summary>
+
     public void ChangeAffection(double amount)
     {
         if (PetManager.Instance.ActivePet != null)
@@ -37,9 +35,8 @@ public class DialogueBridge : MonoBehaviour
         }
     }
 
-    /// <summary>
+
     /// 在对话中解锁宠物的新行为。用法: UnlockBehavior("Dance")
-    /// </summary>
     public void UnlockBehavior(string behaviorName)
     {
         if (PetManager.Instance.ActivePet != null)
@@ -50,9 +47,7 @@ public class DialogueBridge : MonoBehaviour
         }
     }
 
-    /// <summary>
     /// 在对话中触发一个全局游戏事件。用法: TriggerGameEvent("StartGacha")
-    /// </summary>
     public void TriggerGameEvent(string eventName)
     {
         Debug.Log($"触发游戏事件: {eventName}");
