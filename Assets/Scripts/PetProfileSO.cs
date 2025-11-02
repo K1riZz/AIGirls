@@ -20,6 +20,8 @@ public class PetProfileSO : ScriptableObject
     public DialogueDatabase dialogueDatabase; // 该IP使用的对话数据库
     public string startConversationTitle; // 初始剧情对话的标题
     public string touchConversationTitle; // 点击时触发的闲聊对话标题
+    [Tooltip("点击触发的闲聊对话的显示时间（秒）")]
+    public float touchConversationDuration = 4f; // 默认4秒
     [Tooltip("闲置时随机触发的对话标题列表")]
     public System.Collections.Generic.List<string> idleChatterTitles;
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using PixelCrushers.DialogueSystem;
+using System.Collections;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(PetStateMachine))]
@@ -48,7 +49,7 @@ public class PetController : MonoBehaviour
         float screenHeight;
 
 #if UNITY_EDITOR
-        // 在编辑器中，我们使用主摄像机的像素尺寸来精确计算活动范围，以获得最准确的预览
+        // 在编辑器中，使用主摄像机的像素尺寸来精确计算活动范围，以获得最准确的预览
         // 这能确保宠物始终在Game窗口内活动
         screenWidth = Camera.main.pixelWidth;
         screenHeight = Camera.main.pixelHeight;
@@ -73,16 +74,58 @@ public class PetController : MonoBehaviour
     {
         if (Profile == null)
         {
-            Debug.LogError("PetController.Profile is null! Make sure it's initialized correctly from PetManager. Check if GameManager has a PetProfile assigned.", this);
+            Debug.LogError("引用失败.", this);
             return;
         }
 
         // 触发一个简单的对话
         if (!string.IsNullOrEmpty(Profile.touchConversationTitle))
         {
-            Debug.Log($"Starting conversation: {Profile.touchConversationTitle}");
-            // 将点击事件的对话也改为Bark
-            DialogueManager.Bark(Profile.touchConversationTitle, this.transform);
+            // 如果当前没有对话正在进行，则触发Bark
+            if (!DialogueManager.IsConversationActive)
+            {
+                // 调用通用的Bark方法
+                TriggerBark(Profile.touchConversationTitle, Profile.touchConversationDuration);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 触发一个会自动隐藏的Bark对话。
+    /// </summary>
+    /// <param name="conversationTitle">对话标题</param>
+    /// <param name="duration">显示时长（秒）</param>
+    public void TriggerBark(string conversationTitle, float duration)
+    {
+        // 如果标题为空或时长无效，则不执行
+        if (string.IsNullOrEmpty(conversationTitle) || duration <= 0) return;
+
+        StartCoroutine(BarkThenHide(conversationTitle, duration));
+    }
+
+    private IEnumerator BarkThenHide(string conversationTitle, float duration)
+    {
+        // 获取宠物身上的IBarkUI组件
+        var barkUI = GetComponentInChildren<IBarkUI>();
+
+        // 如果当前有其他Bark正在显示，先停止它
+        if (barkUI != null && barkUI.isPlaying)
+        {
+            barkUI.Hide();
+            // 短暂等待，确保旧的Bark UI已清理
+            yield return null;
+        }
+
+        Debug.Log($"Starting bark: {conversationTitle} for {duration} seconds.");
+        DialogueManager.Bark(conversationTitle, this.transform);
+
+        // 等待指定的时间
+        yield return new WaitForSeconds(duration);
+
+        // 再次检查barkUI，如果它仍在播放，则隐藏它
+        if (barkUI != null && barkUI.isPlaying)
+        {
+            barkUI.Hide();
         }
     }
 

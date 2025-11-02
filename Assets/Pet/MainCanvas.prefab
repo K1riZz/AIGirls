@@ -1178,7 +1178,7 @@ MonoBehaviour:
   waitUntilSequenceEnds: 0
   cancelWaitUntilSequenceEndsIfReplacingBark: 0
   waitForContinueButton: 0
-  hideOnConversationStart: 0
+  hideOnConversationStart: 1
   textDisplaySetting: 0
 --- !u!114 &7130524506813048760
 MonoBehaviour:
