@@ -34,24 +34,28 @@ public class IdleState : PetBaseState
         {
             // 在发呆持续时间内随机一个时间点来触发闲聊
             // 为了避免在发呆快结束时才说话，可以稍微限制一下范围，比如在前80%的时间内
-            chatterTriggerTime = Random.Range(1f, idleDuration * 0.8f);
+            // 确保Random.Range的max参数不小于min参数
+            float maxChatterTime = Mathf.Max(1f, idleDuration * 0.8f);
+            chatterTriggerTime = Random.Range(1f, maxChatterTime);
         }
     }
 
     public override void Update()
     {
         idleTimer += Time.deltaTime;
-        if (idleTimer >= idleDuration)
-        {
-            // 发呆结束，切换到闲逛状态
-            stateMachine.SwitchState(new WanderState(controller));
-        }
 
         // 如果设置了闲聊时间，并且还没聊过，并且时间到了
         if (chatterTriggerTime > 0 && !hasChattered && idleTimer >= chatterTriggerTime)
         {
             TryStartIdleChatter();
             hasChattered = true; // 标记为已聊过，防止重复触发
+        }
+
+        // 发呆时间结束后再切换状态，确保所有发呆期间的逻辑都已执行
+        if (idleTimer >= idleDuration)
+        {
+            // 发呆结束，切换到闲逛状态
+            stateMachine.SwitchState(new WanderState(controller));
         }
     }
 
@@ -70,10 +74,9 @@ public class IdleState : PetBaseState
         {
             Debug.Log("尝试触发闲置闲聊...");
             int index = Random.Range(0, controller.Profile.idleChatterTitles.Count);
-            string conversationTitle = controller.Profile.idleChatterTitles[index];
-            // 改为使用Bark，它会使用宠物身上的StandardBarkUI
-            // Bark的第一个参数是对话标题，第二个是说话者
-            DialogueManager.Bark(conversationTitle, controller.transform);
+            string chatterTitle = controller.Profile.idleChatterTitles[index];
+            // 调用Controller中的通用方法来触发一个会自动消失的Bark
+            controller.TriggerBark(chatterTitle, controller.Profile.touchConversationDuration);
         }
     }
 }
