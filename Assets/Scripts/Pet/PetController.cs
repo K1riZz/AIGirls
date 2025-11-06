@@ -81,7 +81,6 @@ public class PetController : MonoBehaviour
         // 触发一个简单的对话
         if (!string.IsNullOrEmpty(Profile.touchConversationTitle))
         {
-            // 如果当前没有对话正在进行，则触发Bark
             if (!DialogueManager.IsConversationActive)
             {
                 // 调用通用的Bark方法
@@ -97,41 +96,40 @@ public class PetController : MonoBehaviour
     /// <param name="duration">显示时长（秒）</param>
     public void TriggerBark(string conversationTitle, float duration)
     {
-        // 如果标题为空或时长无效，则不执行
-        if (string.IsNullOrEmpty(conversationTitle) || duration <= 0) return;
-
+        if (string.IsNullOrEmpty(conversationTitle) || duration <= 0 || DialogueManager.IsConversationActive)
+        {
+            return;
+        }
+        
+       // 停止之前可能正在运行的任何BarkThenHide协程，防止UI冲突
+        StopCoroutine("BarkThenHide");
         StartCoroutine(BarkThenHide(conversationTitle, duration));
+
     }
-
-    private IEnumerator BarkThenHide(string conversationTitle, float duration)
-    {
-        // 获取宠物身上的IBarkUI组件
-        var barkUI = GetComponentInChildren<IBarkUI>();
-
-        // 如果当前有其他Bark正在显示，先停止它
-        if (barkUI != null && barkUI.isPlaying)
-        {
-            barkUI.Hide();
-            // 短暂等待，确保旧的Bark UI已清理
-            yield return null;
-        }
-
-        Debug.Log($"Starting bark: {conversationTitle} for {duration} seconds.");
-        DialogueManager.Bark(conversationTitle, this.transform);
-
-        // 等待指定的时间
-        yield return new WaitForSeconds(duration);
-
-        // 再次检查barkUI，如果它仍在播放，则隐藏它
-        if (barkUI != null && barkUI.isPlaying)
-        {
-            barkUI.Hide();
-        }
-    }
-
     // 由PetInteraction调用
     public void OnBeginDrag()
     {
         StateMachine.SwitchState(new DraggedState(this));
     }
+
+
+private IEnumerator BarkThenHide(string conversationTitle, float duration)
+    {
+        // 1. 触发Bark，让它显示出来
+        DialogueManager.Bark(conversationTitle, this.transform);
+        Debug.Log($"[PetController] Bark '{conversationTitle}' 显示，持续 {duration} 秒。");
+
+        // 2. 等待指定的时长
+        yield return new WaitForSeconds(duration);
+
+        // 3. 手动隐藏Bark UI
+        var barkUI = DialogueActor.GetBarkUI(this.transform);
+        if (barkUI != null && barkUI.isPlaying)
+        {
+            Debug.Log($"[PetController] Bark '{conversationTitle}' 隐藏。");
+            barkUI.Hide();
+        }
+    }
+
+
 }
