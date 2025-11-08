@@ -7,9 +7,6 @@ public class IdleState : PetBaseState
 {
     private float idleTimer;
     private float idleDuration;
-    
-    private float chatterTriggerTime = -1f; // 本次发呆期间触发闲聊的时间点, -1f代表不触发
-    private bool hasChattered = false; // 标记本次发呆是否已经聊过天了
 
     public IdleState(PetController controller) : base(controller) { }
     
@@ -20,35 +17,22 @@ public class IdleState : PetBaseState
         controller.Animator.Play("Idle");
         idleDuration = Random.Range(controller.Profile.idleTimeMin, controller.Profile.idleTimeMax);
         idleTimer = 0f;
-        hasChattered = false;
-        chatterTriggerTime = -1f;
 
         // 显示剧情模式按钮
         if (controller.storyModeButton != null) {
             controller.storyModeButton.SetActive(true);
-        }
-        
-        // 决定在本次发呆期间是否要闲聊 (例如，50%的几率)
-        // 并且确保有闲聊内容可说
-        if (Random.value < 0.5f && controller.Profile.idleChatterTitles.Count > 0)
-        {
-            // 在发呆持续时间内随机一个时间点来触发闲聊
-            // 为了避免在发呆快结束时才说话，可以稍微限制一下范围，比如在前80%的时间内
-            // 确保Random.Range的max参数不小于min参数
-            float maxChatterTime = Mathf.Max(1f, idleDuration * 0.8f);
-            chatterTriggerTime = Random.Range(1f, maxChatterTime);
         }
     }
 
     public override void Update()
     {
         idleTimer += Time.deltaTime;
+        controller.idleChatterTimer += Time.deltaTime;
 
-        // 如果设置了闲聊时间，并且还没聊过，并且时间到了
-        if (chatterTriggerTime > 0 && !hasChattered && idleTimer >= chatterTriggerTime)
+        // 检查是否到了闲聊时间
+        if (controller.idleChatterTimer >= controller.nextChatterTime)
         {
             TryStartIdleChatter();
-            hasChattered = true; // 标记为已聊过，防止重复触发
         }
 
         // 发呆时间结束后再切换状态，确保所有发呆期间的逻辑都已执行
@@ -77,6 +61,8 @@ public class IdleState : PetBaseState
             string chatterTitle = controller.Profile.idleChatterTitles[index];
             // 调用Controller中的通用方法来触发一个会自动消失的Bark
             controller.TriggerBark(chatterTitle, controller.Profile.touchConversationDuration);
+            // 闲聊后，重置计时器
+            controller.ResetIdleChatterTimer();
         }
     }
 }

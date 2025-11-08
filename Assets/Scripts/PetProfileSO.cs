@@ -24,4 +24,9 @@ public class PetProfileSO : ScriptableObject
     public float touchConversationDuration = 4f; // 默认4秒
     [Tooltip("闲置时随机触发的对话标题列表")]
     public System.Collections.Generic.List<string> idleChatterTitles;
+    [Header("闲置闲聊")]
+    [Tooltip("触发闲置闲聊的最小间隔时间（秒）")]
+    public float idleChatterIntervalMin = 15f;
+    [Tooltip("触发闲置闲聊的最大间隔时间（秒）")]
+    public float idleChatterIntervalMax = 45f;
 }

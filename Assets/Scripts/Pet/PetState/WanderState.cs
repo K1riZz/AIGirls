@@ -22,6 +22,9 @@ public class WanderState : PetBaseState
 
     public override void Update()
     {
+        // 在闲逛时也累加闲置计时器
+        controller.idleChatterTimer += Time.deltaTime;
+
         // 移动
         // 由于现在是独立的Overlay Canvas，我们直接操作世界/屏幕坐标
         controller.RectTransform.position = Vector2.MoveTowards(

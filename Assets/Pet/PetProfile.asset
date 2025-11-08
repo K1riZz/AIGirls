@@ -26,3 +26,5 @@ MonoBehaviour:
   idleChatterTitles:
   - Idle 1
   - Idle 2
+  idleChatterIntervalMin: 10
+  idleChatterIntervalMax: 20

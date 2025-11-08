@@ -20,6 +20,10 @@ public class PetController : MonoBehaviour
     // 模拟的可移动桌面区域
     public Rect WalkableArea { get; set; }
 
+    // 闲置闲聊计时器
+    public float idleChatterTimer = 0f;
+    public float nextChatterTime = 0f;
+
     void Awake()
     {
         StateMachine = GetComponent<PetStateMachine>();
@@ -37,6 +41,19 @@ public class PetController : MonoBehaviour
 
         // 初始化状态机
         StateMachine.Initialize(this);
+
+        // 初始化闲聊计时器
+        ResetIdleChatterTimer();
+    }
+
+    /// <summary>
+    /// 重置闲置闲聊计时器，并设置下一次闲聊的随机时间。
+    /// </summary>
+    public void ResetIdleChatterTimer()
+    {
+        idleChatterTimer = 0f;
+        nextChatterTime = Random.Range(Profile.idleChatterIntervalMin, Profile.idleChatterIntervalMax);
+        Debug.Log($"[PetController] 下次闲聊将在 {nextChatterTime} 秒后。");
     }
 
     /// <summary>
@@ -126,8 +143,19 @@ private IEnumerator BarkThenHide(string conversationTitle, float duration)
         var barkUI = DialogueActor.GetBarkUI(this.transform);
         if (barkUI != null && barkUI.isPlaying)
         {
-            Debug.Log($"[PetController] Bark '{conversationTitle}' 隐藏。");
-            barkUI.Hide();
+            // 尝试将 IBarkUI 转换为 StandardBarkUI 以访问其特有成员
+            var standardBarkUI = barkUI as StandardBarkUI;
+            if (standardBarkUI != null)
+            {
+                // StandardBarkUI doesn't expose currentConversationTitle directly.
+                // We assume if barkUI.isPlaying is true, it's the one we triggered.
+                //Debug.Log($"[PetController] Bark '{conversationTitle}' 隐藏。");
+                standardBarkUI.Hide();
+            } else {
+                // 如果不是StandardBarkUI，我们无法进行精确检查，作为备用方案直接隐藏
+                //Debug.Log($"[PetController] Bark '{conversationTitle}' 隐藏。");
+                barkUI.Hide();
+            }
         }
     }
 

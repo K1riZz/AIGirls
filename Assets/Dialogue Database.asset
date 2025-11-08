@@ -229,7 +229,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Dialogue Text
-        value: "\u6211\u662F\u7530\u96E8\u9633"
+        value: "Idle1\u8FDB\u884C\u6D4B\u8BD5\n"
         type: 0
         typeString: 
       - title: Sequence
@@ -259,13 +259,13 @@ MonoBehaviour:
           m_Calls: []
       canvasRect:
         serializedVersion: 2
-        x: 160.82645
-        y: 77.17355
+        x: 169.3824
+        y: 142.61473
         width: 160
         height: 30
     entryGroups: []
-    canvasScrollPosition: {x: 31.420576, y: 13.457649}
-    canvasZoom: 1.2999997
+    canvasScrollPosition: {x: 32.36643, y: 12.900411}
+    canvasZoom: 1.3599997
   - id: 2
     fields:
     - title: Title
@@ -398,7 +398,7 @@ MonoBehaviour:
         type: 0
         typeString: 
       - title: Dialogue Text
-        value: "\u8FDB\u884C\u6D4B"
+        value: "Idl2\u8FDB\u884C\u6D4B\u8BD5"
         type: 0
         typeString: 
       - title: Sequence
@@ -429,7 +429,7 @@ MonoBehaviour:
       canvasRect:
         serializedVersion: 2
         x: 160
-        y: 79
+        y: 80
         width: 160
         height: 30
     entryGroups: []
