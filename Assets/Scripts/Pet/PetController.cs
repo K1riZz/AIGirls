@@ -15,10 +15,15 @@ public class PetController : MonoBehaviour
 
     [Header("UI元素")]
     public GameObject storyModeButton; // 在Inspector中指定剧情模式按钮
+    [Header("玩家输入")]
+    public GameObject playerInputContainer; // 玩家输入框的容器
 
     public float Affection { get; set; }
     // 模拟的可移动桌面区域
     public Rect WalkableArea { get; set; }
+
+    // 玩家是否正在输入
+    public bool IsPlayerTyping { get; set; }
 
     // 闲置闲聊计时器
     public float idleChatterTimer = 0f;
@@ -29,6 +34,7 @@ public class PetController : MonoBehaviour
         StateMachine = GetComponent<PetStateMachine>();
         Animator = GetComponent<Animator>();
         RectTransform = GetComponent<RectTransform>();
+        IsPlayerTyping = false;
     }
 
     public void Initialize(PetProfileSO profile)
@@ -41,6 +47,12 @@ public class PetController : MonoBehaviour
 
         // 初始化状态机
         StateMachine.Initialize(this);
+
+        // 默认显示输入框并跟随宠物
+        if (playerInputContainer != null)
+        {
+            playerInputContainer.SetActive(true);
+        }
 
         // 初始化闲聊计时器
         ResetIdleChatterTimer();
@@ -98,9 +110,9 @@ public class PetController : MonoBehaviour
         // 触发一个简单的对话
         if (!string.IsNullOrEmpty(Profile.touchConversationTitle))
         {
+            // 如果没有其他对话正在进行，则触发点击对话
             if (!DialogueManager.IsConversationActive)
             {
-                // 调用通用的Bark方法
                 TriggerBark(Profile.touchConversationTitle, Profile.touchConversationDuration);
             }
         }
@@ -127,6 +139,41 @@ public class PetController : MonoBehaviour
     public void OnBeginDrag()
     {
         StateMachine.SwitchState(new DraggedState(this));
+    }
+
+    /// <summary>
+    /// 停止宠物的移动，强制切换到Idle状态。
+    /// </summary>
+    public void StopMovement()
+    {
+        if (StateMachine.CurrentState is WanderState)
+        {
+            StateMachine.SwitchState(new IdleState(this));
+        }
+    }
+    
+    /// <summary>
+    /// 显示玩家输入的内容作为一个Bark气泡。
+    /// </summary>
+    /// <param name="message">玩家输入的消息</param>
+    public void ShowPlayerBark(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message)) return;
+
+        // 如果宠物正在移动，则强制切换到Idle状态
+        if (StateMachine.CurrentState is WanderState)
+        {
+            StateMachine.SwitchState(new IdleState(this));
+        }
+
+        // 使用Dialogue System的BarkString来显示任意文本
+        // 这会打断任何当前正在显示的Bark
+        // BarkString(文本, 说话者, 听者, 序列)
+        DialogueManager.BarkString(message, this.transform);
+
+        Debug.Log($"[PetController] 显示玩家输入: '{message}'");
+        // 重置闲聊计时器，避免立即触发闲聊
+        ResetIdleChatterTimer();
     }
 
 

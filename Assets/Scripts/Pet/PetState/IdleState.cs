@@ -35,10 +35,15 @@ public class IdleState : PetBaseState
             TryStartIdleChatter();
         }
 
-        // 发呆时间结束后再切换状态，确保所有发呆期间的逻辑都已执行
-        if (idleTimer >= idleDuration)
+        // 如果玩家正在输入，则保持发呆状态，不切换到移动
+        if (controller.IsPlayerTyping)
         {
-            // 发呆结束，切换到闲逛状态
+            // 重置发呆计时器，这样一旦玩家停止输入，会重新开始完整的发呆倒计时
+            idleTimer = 0;
+        }
+        else if (idleTimer >= idleDuration)
+        {
+            // 只有在玩家没有输入且发呆时间结束后，才切换到闲逛状态
             stateMachine.SwitchState(new WanderState(controller));
         }
     }
