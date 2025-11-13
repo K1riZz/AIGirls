@@ -18,10 +18,6 @@ public class IdleState : PetBaseState
         idleDuration = Random.Range(controller.Profile.idleTimeMin, controller.Profile.idleTimeMax);
         idleTimer = 0f;
 
-        // 显示剧情模式按钮
-        if (controller.storyModeButton != null) {
-            controller.storyModeButton.SetActive(true);
-        }
     }
 
     public override void Update()
@@ -50,10 +46,6 @@ public class IdleState : PetBaseState
 
     public override void Exit()
     {
-        // 隐藏剧情模式按钮
-        if (controller.storyModeButton != null) {
-            controller.storyModeButton.SetActive(false);
-        }
     }
 
     private void TryStartIdleChatter()

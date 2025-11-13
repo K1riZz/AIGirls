@@ -12,6 +12,16 @@ public class PetManager : MonoBehaviour
         Instance = this;
     }
 
+    void Start()
+    {
+        // 如果当前没有激活的宠物，则尝试在场景中查找一个
+        if (ActivePet == null)
+        {
+            ActivePet = FindObjectOfType<PetController>();
+            // 注意：此时ActivePet的初始化依赖于其自身的Start()和initialProfile
+        }
+    }
+
     public void SpawnPet(PetProfileSO profile)
     {
         if (ActivePet != null)

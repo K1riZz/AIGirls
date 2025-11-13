@@ -107,35 +107,6 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 进入剧情模式。此方法由UI按钮调用。
-    /// </summary>
-    public void EnterStoryMode()
-    {
-        var pet = PetManager.Instance.ActivePet;
-        if (pet == null || DialogueManager.IsConversationActive) return;
-
-        Debug.Log("进入剧情模式...");
-
-        // 1. 禁用桌面模式AI和交互
-        if (pet.StateMachine != null) pet.StateMachine.enabled = false;
-        if (pet.GetComponent<PetInteraction>() != null) pet.GetComponent<PetInteraction>().enabled = false;
-        
-        // 让宠物回到站立的Idle动画，避免在剧情时还在走路或做其他动作
-        if (pet.Animator != null) pet.Animator.Play("Idle");
-
-        // 2. 开始剧情对话
-        // 我们使用PetProfile中定义的初始剧情对话
-        if (!string.IsNullOrEmpty(currentPetProfile.startConversationTitle))
-        {
-            DialogueManager.StartConversation(currentPetProfile.startConversationTitle, pet.transform);
-        }
-        else
-        {
-            Debug.LogWarning("PetProfile中没有指定 'startConversationTitle'，无法开始剧情模式。");
-        }
-    }
-
-    /// <summary>
     /// 当任何一个正式对话（Conversation）结束时，此方法会被调用。
     /// </summary>
     private void OnConversationEnded(Transform actor)

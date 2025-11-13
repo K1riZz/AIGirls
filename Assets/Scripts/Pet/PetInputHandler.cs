@@ -1,4 +1,3 @@
-// 文件路径: d:\UnityProject\AIGirl\Assets\Scripts\Pet\PetInputHandler.cs
 using UnityEngine;
 using TMPro;
 
@@ -52,6 +51,11 @@ public class PetInputHandler : MonoBehaviour
         // 如果消息不为空，则发送
         if (!string.IsNullOrWhiteSpace(message))
         {
+            // 发送消息时，也隐藏右键菜单
+            petController.HideContextMenus(true); // 立即隐藏菜单
+            
+            // 在显示新Bark之前，调用PetController中的安全方法来隐藏当前气泡
+            petController.SafelyHideCurrentBark();
             petController.ShowPlayerBark(message);
         }
 

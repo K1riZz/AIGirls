@@ -6,20 +6,26 @@ using UnityEngine;
 /// </summary>
 public class StoryModeButtonHandler : MonoBehaviour
 {
+    private PetController petController;
+
+    void Awake()
+    {
+        // 在父级对象中查找PetController
+        petController = GetComponentInParent<PetController>();
+        if (petController == null)
+        {
+            Debug.LogError("StoryModeButtonHandler 无法在父级中找到 PetController!", this);
+        }
+    }
+
     /// <summary>
     /// 这个方法将被UI按钮的OnClick事件调用。
     /// </summary>
     public void TriggerEnterStoryMode()
     {
-        // 检查GameManager实例是否存在
-        if (GameManager.Instance != null)
+        if (petController != null)
         {
-            // 调用GameManager的单例方法
-            GameManager.Instance.EnterStoryMode();
-        }
-        else
-        {
-            Debug.LogError("GameManager.Instance not found! Cannot enter story mode.");
+            petController.EnterStoryMode();
         }
     }
 }
