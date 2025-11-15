@@ -22,6 +22,13 @@ public class WanderState : PetBaseState
 
     public override void Update()
     {
+        // 如果应该强制保持idle状态（对话激活、菜单显示、输入框激活），则立即切换到idle状态
+        if (controller.ShouldForceIdle())
+        {
+            stateMachine.SwitchState(new IdleState(controller));
+            return;
+        }
+
         // 在闲逛时也累加闲置计时器
         controller.idleChatterTimer += Time.deltaTime;
 

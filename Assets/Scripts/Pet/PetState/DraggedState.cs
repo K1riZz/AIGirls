@@ -10,11 +10,7 @@ public class DraggedState : PetBaseState
     {
         Debug.Log("进入[被拖拽]状态");
         controller.Animator.Play("Dragged"); // 假设你有一个名为"Dragged"的动画状态
-
-        // 确保剧情模式按钮在拖拽时是隐藏的
-        if (controller.storyModeButton != null) {
-            controller.storyModeButton.SetActive(false);
-        }
+        // 注意：不隐藏菜单按钮，让菜单系统自己管理按钮的显示/隐藏
     }
 
     public override void Update()
@@ -27,5 +23,10 @@ public class DraggedState : PetBaseState
         {
             stateMachine.SwitchState(new IdleState(controller));
         }
+    }
+
+    public override void Exit()
+    {
+        // 拖拽结束时不需要特殊处理，按钮的显示状态由菜单系统管理
     }
 }

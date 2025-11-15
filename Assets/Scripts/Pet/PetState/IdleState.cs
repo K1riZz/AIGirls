@@ -31,6 +31,14 @@ public class IdleState : PetBaseState
             TryStartIdleChatter();
         }
 
+        // 如果应该强制保持idle状态（对话激活、菜单显示、输入框激活），则重置计时器
+        if (controller.ShouldForceIdle())
+        {
+            // 重置发呆计时器，保持idle状态
+            idleTimer = 0;
+            return;
+        }
+
         // 如果玩家正在输入，则保持发呆状态，不切换到移动
         if (controller.IsPlayerTyping)
         {

@@ -90,6 +90,21 @@ public class PetController : MonoBehaviour
         {
             Initialize(initialProfile);
         }
+
+        // 订阅对话系统事件，以便在对话开始时强制进入idle状态
+        if (DialogueManager.Instance != null)
+        {
+            DialogueManager.Instance.conversationStarted += OnConversationStarted;
+        }
+    }
+
+    void OnDestroy()
+    {
+        // 取消订阅事件，防止内存泄漏
+        if (DialogueManager.Instance != null)
+        {
+            DialogueManager.Instance.conversationStarted -= OnConversationStarted;
+        }
     }
 
     public void Initialize(PetProfileSO profile)
@@ -201,17 +216,20 @@ public class PetController : MonoBehaviour
         else
         {
             HideContextMenus();
-        }
+        }  
     }
 
     private void ShowContextMenus()
     {
-        // 根据Profile中是否存在剧情对话来决定是否显示“剧情”按钮
+        // 根据Profile中是否存在剧情对话来决定是否显示"剧情"按钮
         if (storyModeButton != null)
         {
             bool isStoryAvailable = (Profile != null && !string.IsNullOrEmpty(Profile.startConversationTitle));
             storyModeButton.SetActive(isStoryAvailable);
         }
+
+        // 显示菜单时，强制进入idle状态
+        ForceIdleState();
 
         if (menuFadeCoroutine != null) StopCoroutine(menuFadeCoroutine);
         menuFadeCoroutine = StartCoroutine(FadeMenus(true));
@@ -310,6 +328,8 @@ public class PetController : MonoBehaviour
     {
         HideContextMenus();
         Debug.Log("进入剧情模式...");
+        // 强制进入idle状态
+        ForceIdleState();
         // 实际的剧情触发逻辑
         if (!string.IsNullOrEmpty(Profile.startConversationTitle))
         {
@@ -325,6 +345,11 @@ public class PetController : MonoBehaviour
             bool isVisible = !playerInputContainer.activeSelf;
             playerInputContainer.SetActive(isVisible);
             Debug.Log(isVisible ? "显示对话框" : "隐藏对话框");
+            // 如果显示输入框，强制进入idle状态
+            if (isVisible)
+            {
+                ForceIdleState();
+            }
         }
     }
 
@@ -375,6 +400,62 @@ public class PetController : MonoBehaviour
         {
             StateMachine.SwitchState(new IdleState(this));
         }
+    }
+
+    /// <summary>
+    /// 检查菜单是否可见（alpha > 0）
+    /// </summary>
+    public bool IsMenuVisible()
+    {
+        return (bottomMenuGroup != null && bottomMenuGroup.alpha > 0) || 
+               (rightMenuGroup != null && rightMenuGroup.alpha > 0);
+    }
+
+    /// <summary>
+    /// 检查是否应该强制保持idle状态。
+    /// 当对话激活、菜单显示或输入框激活时，应该保持idle状态。
+    /// </summary>
+    public bool ShouldForceIdle()
+    {
+        // 检查对话是否激活
+        if (DialogueManager.IsConversationActive)
+        {
+            return true;
+        }
+
+        // 检查菜单是否显示（alpha > 0 表示菜单可见）
+        if (IsMenuVisible())
+        {
+            return true;
+        }
+
+        // 检查输入框是否激活
+        if (playerInputContainer != null && playerInputContainer.activeSelf)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 强制切换到Idle状态（如果当前不是Idle状态）。
+    /// </summary>
+    public void ForceIdleState()
+    {
+        if (!(StateMachine.CurrentState is IdleState))
+        {
+            StateMachine.SwitchState(new IdleState(this));
+        }
+    }
+
+    /// <summary>
+    /// 对话开始时的事件处理
+    /// </summary>
+    private void OnConversationStarted(Transform actor)
+    {
+        Debug.Log("[PetController] 对话开始，强制进入idle状态");
+        ForceIdleState();
     }
     
     /// <summary>
