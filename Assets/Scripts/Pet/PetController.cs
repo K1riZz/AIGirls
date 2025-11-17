@@ -29,6 +29,10 @@ public class PetController : MonoBehaviour
     [Header("玩家输入")]
     public GameObject playerInputContainer; // 玩家输入框的容器
 
+    [Header("小游戏系统")]
+    [Tooltip("快速点击检测器（自动查找）")]
+    public RapidClickDetector rapidClickDetector;
+
     public float Affection { get; set; }
     // 模拟的可移动桌面区域
     public Rect WalkableArea { get; set; }
@@ -68,6 +72,25 @@ public class PetController : MonoBehaviour
             Transform rightMenuTransform = transform.Find("RightMenu");
             if (rightMenuTransform != null) rightMenu = rightMenuTransform.gameObject;
             else Debug.LogError("PetController错误: 未能自动找到子对象 'RightMenu'。请检查其名称和层级是否正确。", this);
+        }
+
+        // 自动查找或创建快速点击检测器
+        if (rapidClickDetector == null)
+        {
+            rapidClickDetector = GetComponentInChildren<RapidClickDetector>();
+            if (rapidClickDetector == null)
+            {
+                // 如果没有找到，尝试在Canvas子对象上创建
+                Transform canvasTransform = transform.Find("Canvas");
+                if (canvasTransform != null)
+                {
+                    rapidClickDetector = canvasTransform.gameObject.AddComponent<RapidClickDetector>();
+                }
+                else
+                {
+                    Debug.LogWarning("PetController: 未找到Canvas子对象，无法创建RapidClickDetector。请手动添加。", this);
+                }
+            }
         }
 
         if (bottomMenu != null)
@@ -192,8 +215,28 @@ public class PetController : MonoBehaviour
             return;
         }
 
-        // 触发一个简单的对话
-        if (!string.IsNullOrEmpty(Profile.touchConversationTitle))
+        // 检查是否在小游戏中，如果是则只记录点击，不触发对话
+        if (MiniGameManager.Instance != null && MiniGameManager.Instance.IsMiniGameActive)
+        {
+            Debug.Log("[PetController] 当前在小游戏中，忽略点击");
+            return;
+        }
+
+        // 记录点击用于快速点击检测（延迟触发Bark，避免快速点击时触发Bark）
+        bool shouldTriggerBark = true;
+        if (rapidClickDetector != null)
+        {
+            // 记录点击，但不立即触发Bark
+            // 如果快速点击检测成功，将在OnRapidClickDetected中阻止Bark
+            rapidClickDetector.RegisterClick();
+            
+            // 延迟一小段时间再触发Bark，给快速点击检测时间判断
+            StartCoroutine(DelayedBarkCheck(Profile.touchConversationTitle, Profile.touchConversationDuration));
+            shouldTriggerBark = false;
+        }
+
+        // 如果没有快速点击检测器，直接触发对话
+        if (shouldTriggerBark && !string.IsNullOrEmpty(Profile.touchConversationTitle))
         {
             // 如果没有其他对话正在进行，则触发点击对话
             if (!DialogueManager.IsConversationActive)
@@ -435,6 +478,12 @@ public class PetController : MonoBehaviour
             return true;
         }
 
+        // 检查是否在小游戏中
+        if (MiniGameManager.Instance != null && MiniGameManager.Instance.IsMiniGameActive)
+        {
+            return true;
+        }
+
         return false;
     }
 
@@ -560,6 +609,27 @@ private IEnumerator BarkThenHide(string conversationTitle, float duration)
             }
         }
         barkThenHideCoroutine = null;
+    }
+
+    /// <summary>
+    /// 延迟检查是否触发Bark（给快速点击检测时间）
+    /// </summary>
+    private System.Collections.IEnumerator DelayedBarkCheck(string conversationTitle, float duration)
+    {
+        yield return new WaitForSeconds(0.1f); // 延迟0.1秒
+
+        // 如果在这期间触发了小游戏，则不触发Bark
+        if (MiniGameManager.Instance != null && MiniGameManager.Instance.IsMiniGameActive)
+        {
+            Debug.Log("[PetController] 快速点击检测成功，取消Bark触发");
+            yield break;
+        }
+
+        // 如果不在小游戏中，且没有对话正在进行，则触发Bark
+        if (!string.IsNullOrEmpty(conversationTitle) && !DialogueManager.IsConversationActive)
+        {
+            TriggerBark(conversationTitle, duration);
+        }
     }
 
 

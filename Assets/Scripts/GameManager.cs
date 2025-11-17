@@ -33,6 +33,9 @@ public class GameManager : MonoBehaviour
             gameObject.AddComponent<DesktopInputTracker>();
         }
 
+        // 初始化小游戏管理器
+        InitializeMiniGameManager();
+
         // 订阅对话结束事件，用于从剧情模式切换回桌面模式
         // 使用 += 来订阅事件
         PixelCrushers.DialogueSystem.DialogueManager.Instance.conversationEnded += OnConversationEnded;
@@ -53,6 +56,53 @@ public class GameManager : MonoBehaviour
                 PetManager.Instance.ActivePet.UpdateWalkableArea();
             }
         }
+
+        // 注册小游戏
+        RegisterMiniGames();
+    }
+
+    /// <summary>
+    /// 初始化小游戏管理器
+    /// </summary>
+    private void InitializeMiniGameManager()
+    {
+        // 确保MiniGameManager存在（创建为GameManager的子对象，方便在场景中找到）
+        if (MiniGameManager.Instance == null)
+        {
+            GameObject managerObj = new GameObject("MiniGameManager");
+            managerObj.transform.SetParent(transform);
+            managerObj.AddComponent<MiniGameManager>();
+            Debug.Log("[GameManager] 创建了MiniGameManager作为子对象");
+        }
+        else
+        {
+            Debug.Log("[GameManager] MiniGameManager已存在");
+        }
+    }
+
+    /// <summary>
+    /// 注册所有小游戏
+    /// </summary>
+    private void RegisterMiniGames()
+    {
+        if (MiniGameManager.Instance == null) return;
+
+        // 等待一帧确保MiniGameManager的Start已经执行（UI容器已创建）
+        StartCoroutine(RegisterMiniGamesCoroutine());
+    }
+
+    private System.Collections.IEnumerator RegisterMiniGamesCoroutine()
+    {
+        yield return null; // 等待一帧
+
+        if (MiniGameManager.Instance == null) yield break;
+
+        // 创建并注册泡泡消除小游戏
+        GameObject bubblePopObj = new GameObject("BubblePopMiniGame");
+        bubblePopObj.transform.SetParent(MiniGameManager.Instance.transform);
+        BubblePopMiniGame bubblePopMiniGame = bubblePopObj.AddComponent<BubblePopMiniGame>();
+        
+        MiniGameManager.Instance.RegisterMiniGame(bubblePopMiniGame);
     }
 
     void OnDestroy()

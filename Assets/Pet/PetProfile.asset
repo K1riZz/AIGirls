@@ -28,3 +28,20 @@ MonoBehaviour:
   - Idle 2
   idleChatterIntervalMin: 10
   idleChatterIntervalMax: 20
+  rapidClickRequiredClicks: 10
+  rapidClickTimeWindow: 2
+  rapidClickMaxInterval: 0.5
+  bubbleGameDuration: 30
+  bubbleInitialCount: 15
+  bubbleMaxCount: 25
+  bubbleSpawnInterval: 1.5
+  bubbleSizeRange: {x: 50, y: 120}
+  bubbleColors:
+  - {r: 1, g: 0.5, b: 0.5, a: 0.8}
+  - {r: 0.5, g: 1, b: 0.5, a: 0.8}
+  - {r: 0.5, g: 0.5, b: 1, a: 0.8}
+  - {r: 1, g: 1, b: 0.5, a: 0.8}
+  - {r: 1, g: 0.5, b: 1, a: 0.8}
+  - {r: 0.5, g: 1, b: 1, a: 0.8}
+  bubbleSprite: {fileID: 21300000, guid: 791a6c5f05fc747458c6461f7ffafbff, type: 3}
+  uiFontAsset: {fileID: 11400000, guid: 11f1b00864c55054283ec352ef076193, type: 2}
