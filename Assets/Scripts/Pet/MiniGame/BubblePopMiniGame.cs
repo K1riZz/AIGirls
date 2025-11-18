@@ -24,6 +24,10 @@ public class BubblePopMiniGame : MiniGameBase
     [SerializeField] private float bubbleSpawnInterval = 1.5f;
     [Tooltip("泡泡大小范围")]
     [SerializeField] private Vector2 bubbleSizeRange = new Vector2(50f, 120f);
+    [Tooltip("泡泡向上移动速度（像素/秒）")]
+    [SerializeField] private float bubbleMoveSpeed = 50f;
+    [Tooltip("泡泡超出距离后消失（像素）")]
+    [SerializeField] private float bubbleDestroyDistance = 200f;
     [Tooltip("泡泡颜色列表")]
     [SerializeField] private Color[] bubbleColors = new Color[]
     {
@@ -63,11 +67,14 @@ public class BubblePopMiniGame : MiniGameBase
     private float actualBubbleSpawnInterval;
     private Vector2 actualBubbleSizeRange;
     private Color[] actualBubbleColors;
+    private float actualBubbleMoveSpeed;
+    private float actualBubbleDestroyDistance;
 
     private float gameTimer = 0f;
     private float spawnTimer = 0f;
     private List<Bubble> activeBubbles = new List<Bubble>();
     private Coroutine gameCoroutine;
+    private Coroutine fadeOutCoroutine;
     private CanvasGroup canvasGroup;
 
     protected override void OnInitialize()
@@ -189,10 +196,6 @@ public class BubblePopMiniGame : MiniGameBase
 
         Debug.Log($"[BubblePopMiniGame] 开始生成初始泡泡，数量: {actualInitialBubbleCount}");
         
-        // 先创建一个测试气泡在屏幕中心，用于验证渲染
-        CreateTestBubble();
-        yield return null;
-        
         // 生成初始泡泡
         for (int i = 0; i < actualInitialBubbleCount; i++)
         {
@@ -215,6 +218,13 @@ public class BubblePopMiniGame : MiniGameBase
             gameCoroutine = null;
         }
 
+        // 停止淡出协程（如果正在运行）
+        if (fadeOutCoroutine != null)
+        {
+            StopCoroutine(fadeOutCoroutine);
+            fadeOutCoroutine = null;
+        }
+
         // 清除所有泡泡
         foreach (var bubble in activeBubbles)
         {
@@ -226,14 +236,15 @@ public class BubblePopMiniGame : MiniGameBase
         activeBubbles.Clear();
 
         // 隐藏UI
-        if (canvasGroup != null)
+        if (canvasGroup != null && uiInstance != null)
         {
-            StartCoroutine(FadeOutUI());
+            fadeOutCoroutine = StartCoroutine(FadeOutUI());
         }
         else if (uiInstance != null)
         {
             Destroy(uiInstance);
             uiInstance = null;
+            canvasGroup = null;
         }
     }
 
@@ -247,6 +258,28 @@ public class BubblePopMiniGame : MiniGameBase
         {
             SpawnBubble();
             spawnTimer = 0f;
+        }
+
+        // 更新所有气泡位置并检查是否需要销毁
+        for (int i = activeBubbles.Count - 1; i >= 0; i--)
+        {
+            if (activeBubbles[i] != null)
+            {
+                activeBubbles[i].UpdateBubble(Time.deltaTime);
+                // 如果气泡已经超出距离，自动销毁
+                if (activeBubbles[i].ShouldDestroy())
+                {
+                    if (activeBubbles[i].gameObject != null)
+                    {
+                        Destroy(activeBubbles[i].gameObject);
+                    }
+                    activeBubbles.RemoveAt(i);
+                }
+            }
+            else
+            {
+                activeBubbles.RemoveAt(i);
+            }
         }
     }
 
@@ -271,7 +304,7 @@ public class BubblePopMiniGame : MiniGameBase
         canvasGroup.blocksRaycasts = true;
 
         Image background = uiInstance.AddComponent<Image>();
-        background.color = new Color(0f, 0f, 0f, 0.3f); // 半透明黑色背景
+        background.color = new Color(0f, 0f, 0f, 0f); // 完全透明背景，不影响游玩
 
         // 创建游戏区域
         GameObject gameAreaObj = new GameObject("GameArea");
@@ -498,7 +531,7 @@ public class BubblePopMiniGame : MiniGameBase
 
         // 添加Bubble组件
         Bubble bubble = bubbleObj.AddComponent<Bubble>();
-        bubble.Initialize(this);
+        bubble.Initialize(this, actualBubbleMoveSpeed, actualBubbleDestroyDistance);
         
         activeBubbles.Add(bubble);
         Debug.Log($"[BubblePopMiniGame] 泡泡已添加，当前泡泡总数: {activeBubbles.Count}");
@@ -514,41 +547,6 @@ public class BubblePopMiniGame : MiniGameBase
         }
     }
 
-    /// <summary>
-    /// 创建测试气泡（在屏幕中心，用于验证渲染）
-    /// </summary>
-    private void CreateTestBubble()
-    {
-        if (gameArea == null)
-        {
-            Debug.LogError("[BubblePopMiniGame] gameArea为null，无法创建测试气泡");
-            return;
-        }
-
-        GameObject testBubble = new GameObject("TestBubble");
-        testBubble.transform.SetParent(gameArea, false);
-
-        RectTransform rectTransform = testBubble.AddComponent<RectTransform>();
-        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-        rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        rectTransform.sizeDelta = new Vector2(200f, 200f); // 很大的测试气泡
-        rectTransform.anchoredPosition = Vector2.zero; // 屏幕中心
-        rectTransform.localScale = Vector3.one;
-
-        Image image = testBubble.AddComponent<Image>();
-        image.type = Image.Type.Simple;
-        image.color = new Color(1f, 0f, 0f, 1f); // 亮红色，非常明显
-        image.raycastTarget = true;
-        
-        // 使用默认白色矩形sprite
-        image.sprite = CreateDefaultSprite(200);
-
-        testBubble.SetActive(true);
-
-        Debug.Log($"[BubblePopMiniGame] 创建测试气泡 - 位置: {rectTransform.anchoredPosition}, " +
-                 $"大小: {rectTransform.sizeDelta}, 颜色: 红色, 父对象: {GetGameObjectPath(gameArea.transform)}");
-    }
 
     /// <summary>
     /// 获取GameObject的完整路径（用于调试）
@@ -631,6 +629,9 @@ public class BubblePopMiniGame : MiniGameBase
             actualBubbleColors = profile.bubbleColors;
             bubbleSprite = profile.bubbleSprite;
             uiFontAsset = profile.uiFontAsset;
+            // 如果Profile中没有这些参数，使用本地配置
+            actualBubbleMoveSpeed = bubbleMoveSpeed;
+            actualBubbleDestroyDistance = bubbleDestroyDistance;
             
             Debug.Log("[BubblePopMiniGame] 从PetProfileSO加载配置");
         }
@@ -642,6 +643,8 @@ public class BubblePopMiniGame : MiniGameBase
             actualBubbleSpawnInterval = bubbleSpawnInterval;
             actualBubbleSizeRange = bubbleSizeRange;
             actualBubbleColors = bubbleColors;
+            actualBubbleMoveSpeed = bubbleMoveSpeed;
+            actualBubbleDestroyDistance = bubbleDestroyDistance;
             
             Debug.Log("[BubblePopMiniGame] 使用本地配置");
         }
@@ -738,14 +741,20 @@ public class BubblePopMiniGame : MiniGameBase
         float duration = 0.3f;
         float timer = 0f;
         
-        while (timer < duration)
+        while (timer < duration && canvasGroup != null && uiInstance != null)
         {
             timer += Time.deltaTime;
-            canvasGroup.alpha = Mathf.Lerp(0f, 1f, timer / duration);
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = Mathf.Lerp(0f, 1f, timer / duration);
+            }
             yield return null;
         }
         
-        canvasGroup.alpha = 1f;
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 1f;
+        }
     }
 
     /// <summary>
@@ -756,22 +765,34 @@ public class BubblePopMiniGame : MiniGameBase
         float duration = 0.3f;
         float timer = 0f;
         
-        while (timer < duration)
+        // 检查canvasGroup和uiInstance是否仍然有效
+        while (timer < duration && canvasGroup != null && uiInstance != null)
         {
             timer += Time.deltaTime;
-            canvasGroup.alpha = Mathf.Lerp(1f, 0f, timer / duration);
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = Mathf.Lerp(1f, 0f, timer / duration);
+            }
             yield return null;
         }
         
-        canvasGroup.alpha = 0f;
-        canvasGroup.interactable = false;
-        canvasGroup.blocksRaycasts = false;
+        // 再次检查对象是否仍然存在，然后清理
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 0f;
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
+        }
         
         if (uiInstance != null)
         {
             Destroy(uiInstance);
             uiInstance = null;
         }
+        
+        // 清理引用
+        canvasGroup = null;
+        fadeOutCoroutine = null;
     }
 }
 
@@ -782,11 +803,25 @@ public class Bubble : MonoBehaviour, UnityEngine.EventSystems.IPointerClickHandl
 {
     private BubblePopMiniGame game;
     private RectTransform rectTransform;
+    private float moveSpeed;
+    private float destroyDistance;
+    private float initialY;
+    private bool isInitialized = false;
 
-    public void Initialize(BubblePopMiniGame game)
+    public void Initialize(BubblePopMiniGame game, float moveSpeed, float destroyDistance)
     {
         this.game = game;
+        this.moveSpeed = moveSpeed;
+        this.destroyDistance = destroyDistance;
         rectTransform = GetComponent<RectTransform>();
+        
+        // 记录初始Y位置
+        if (rectTransform != null)
+        {
+            initialY = rectTransform.anchoredPosition.y;
+        }
+        
+        isInitialized = true;
         
         // 添加Button组件以便接收点击事件
         if (GetComponent<Button>() == null)
@@ -794,6 +829,31 @@ public class Bubble : MonoBehaviour, UnityEngine.EventSystems.IPointerClickHandl
             Button button = gameObject.AddComponent<Button>();
             button.transition = Selectable.Transition.None;
         }
+    }
+
+    /// <summary>
+    /// 更新气泡位置（平滑向上移动）
+    /// </summary>
+    public void UpdateBubble(float deltaTime)
+    {
+        if (!isInitialized || rectTransform == null) return;
+
+        // 平滑向上移动
+        Vector2 currentPos = rectTransform.anchoredPosition;
+        currentPos.y += moveSpeed * deltaTime;
+        rectTransform.anchoredPosition = currentPos;
+    }
+
+    /// <summary>
+    /// 检查气泡是否应该被销毁（超出距离）
+    /// </summary>
+    public bool ShouldDestroy()
+    {
+        if (!isInitialized || rectTransform == null) return false;
+
+        // 检查是否超出初始位置一定距离
+        float currentY = rectTransform.anchoredPosition.y;
+        return (currentY - initialY) > destroyDistance;
     }
 
     public void OnPointerClick(UnityEngine.EventSystems.PointerEventData eventData)

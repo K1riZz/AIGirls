@@ -15,6 +15,9 @@ public class PetProfileSO : ScriptableObject
     public float moveSpeed = 100f;
     public float idleTimeMin = 3f;
     public float idleTimeMax = 8f;
+    [Tooltip("桌宠漫游的概率（0-1之间，0表示不漫游，1表示总是漫游）")]
+    [Range(0f, 1f)]
+    public float wanderProbability = 0f; // 默认为0，暂时不进行漫游
 
     [Header("对话系统集成")]
     public DialogueDatabase dialogueDatabase; // 该IP使用的对话数据库

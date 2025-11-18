@@ -19,6 +19,7 @@ MonoBehaviour:
   moveSpeed: 100
   idleTimeMin: 3
   idleTimeMax: 8
+  wanderProbability: 0
   dialogueDatabase: {fileID: 11400000, guid: b6650d703b8299540830153dce10cd09, type: 2}
   startConversationTitle: StroyConversation1
   touchConversationTitle: TouchConversation1
@@ -32,10 +33,10 @@ MonoBehaviour:
   rapidClickTimeWindow: 2
   rapidClickMaxInterval: 0.5
   bubbleGameDuration: 30
-  bubbleInitialCount: 15
+  bubbleInitialCount: 1
   bubbleMaxCount: 25
   bubbleSpawnInterval: 1.5
-  bubbleSizeRange: {x: 50, y: 120}
+  bubbleSizeRange: {x: 20, y: 30}
   bubbleColors:
   - {r: 1, g: 0.5, b: 0.5, a: 0.8}
   - {r: 0.5, g: 1, b: 0.5, a: 0.8}

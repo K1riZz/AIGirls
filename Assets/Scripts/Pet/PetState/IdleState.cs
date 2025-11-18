@@ -47,8 +47,30 @@ public class IdleState : PetBaseState
         }
         else if (idleTimer >= idleDuration)
         {
-            // 只有在玩家没有输入且发呆时间结束后，才切换到闲逛状态
-            stateMachine.SwitchState(new WanderState(controller));
+            // 根据Profile中的漫游概率决定是否进入漫游状态
+            // 如果概率为0，则重置计时器继续idle状态（不漫游）
+            if (controller.Profile.wanderProbability > 0f)
+            {
+                // 根据概率随机决定是否进入漫游
+                float randomValue = Random.Range(0f, 1f);
+                if (randomValue <= controller.Profile.wanderProbability)
+                {
+                    // 只有在玩家没有输入且发呆时间结束后，且概率判定通过，才切换到闲逛状态
+                    stateMachine.SwitchState(new WanderState(controller));
+                }
+                else
+                {
+                    // 概率判定未通过，重置计时器继续idle状态
+                    idleTimer = 0f;
+                    idleDuration = Random.Range(controller.Profile.idleTimeMin, controller.Profile.idleTimeMax);
+                }
+            }
+            else
+            {
+                // 漫游概率为0，重置计时器继续idle状态（不漫游）
+                idleTimer = 0f;
+                idleDuration = Random.Range(controller.Profile.idleTimeMin, controller.Profile.idleTimeMax);
+            }
         }
     }
 
