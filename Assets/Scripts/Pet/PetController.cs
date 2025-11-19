@@ -215,11 +215,35 @@ public class PetController : MonoBehaviour
             return;
         }
 
-        // 检查是否在小游戏中，如果是则只记录点击，不触发对话
-        if (MiniGameManager.Instance != null && MiniGameManager.Instance.IsMiniGameActive)
+        // 检查是否在小游戏中，如果是则只记录点击，不触发对话（使用反射避免编译错误）
+        try
         {
-            Debug.Log("[PetController] 当前在小游戏中，忽略点击");
-            return;
+            var miniGameManagerType = System.Type.GetType("MiniGameManager");
+            if (miniGameManagerType != null)
+            {
+                var instanceProperty = miniGameManagerType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (instanceProperty != null)
+                {
+                    var instance = instanceProperty.GetValue(null);
+                    if (instance != null)
+                    {
+                        var isActiveProperty = miniGameManagerType.GetProperty("IsMiniGameActive");
+                        if (isActiveProperty != null)
+                        {
+                            bool isActive = (bool)isActiveProperty.GetValue(instance);
+                            if (isActive)
+                            {
+                                Debug.Log("[PetController] 当前在小游戏中，忽略点击");
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // MiniGameManager 可能尚未编译，忽略错误
         }
 
         // 记录点击用于快速点击检测（延迟触发Bark，避免快速点击时触发Bark）
@@ -367,13 +391,46 @@ public class PetController : MonoBehaviour
 
     #region 右键菜单按钮功能
 
+    /// <summary>
+    /// 进入剧情模式（由剧情按钮调用）
+    /// </summary>
     public void EnterStoryMode()
     {
         HideContextMenus();
-        Debug.Log("进入剧情模式...");
-        // 强制进入idle状态
+        Debug.Log("[PetController] 进入剧情模式...");
+        
+        // 停止当前的所有活动
         ForceIdleState();
-        // 实际的剧情触发逻辑
+
+        // 使用StoryModeManager进入剧情模式（使用反射避免编译错误）
+        try
+        {
+            var storyModeManagerType = System.Type.GetType("StoryModeManager");
+            if (storyModeManagerType != null)
+            {
+                var instanceProperty = storyModeManagerType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (instanceProperty != null)
+                {
+                    var instance = instanceProperty.GetValue(null);
+                    if (instance != null)
+                    {
+                        var enterMethod = storyModeManagerType.GetMethod("EnterStoryMode", new System.Type[] { typeof(string) });
+                        if (enterMethod != null)
+                        {
+                            enterMethod.Invoke(instance, new object[] { Profile.startConversationTitle });
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // StoryModeManager 可能尚未编译，使用备用方案
+        }
+        
+        // 备用方案：直接触发对话（保持原有行为）
+        Debug.LogWarning("[PetController] StoryModeManager未找到，使用备用方案直接触发对话");
         if (!string.IsNullOrEmpty(Profile.startConversationTitle))
         {
             DialogueManager.StartConversation(Profile.startConversationTitle, this.transform);
@@ -478,10 +535,34 @@ public class PetController : MonoBehaviour
             return true;
         }
 
-        // 检查是否在小游戏中
-        if (MiniGameManager.Instance != null && MiniGameManager.Instance.IsMiniGameActive)
+        // 检查是否在小游戏中（使用反射避免编译错误）
+        try
         {
-            return true;
+            var miniGameManagerType = System.Type.GetType("MiniGameManager");
+            if (miniGameManagerType != null)
+            {
+                var instanceProperty = miniGameManagerType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (instanceProperty != null)
+                {
+                    var instance = instanceProperty.GetValue(null);
+                    if (instance != null)
+                    {
+                        var isActiveProperty = miniGameManagerType.GetProperty("IsMiniGameActive");
+                        if (isActiveProperty != null)
+                        {
+                            bool isActive = (bool)isActiveProperty.GetValue(instance);
+                            if (isActive)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // MiniGameManager 可能尚未编译，忽略错误
         }
 
         return false;
@@ -618,11 +699,35 @@ private IEnumerator BarkThenHide(string conversationTitle, float duration)
     {
         yield return new WaitForSeconds(0.1f); // 延迟0.1秒
 
-        // 如果在这期间触发了小游戏，则不触发Bark
-        if (MiniGameManager.Instance != null && MiniGameManager.Instance.IsMiniGameActive)
+        // 如果在这期间触发了小游戏，则不触发Bark（使用反射避免编译错误）
+        try
         {
-            Debug.Log("[PetController] 快速点击检测成功，取消Bark触发");
-            yield break;
+            var miniGameManagerType = System.Type.GetType("MiniGameManager");
+            if (miniGameManagerType != null)
+            {
+                var instanceProperty = miniGameManagerType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (instanceProperty != null)
+                {
+                    var instance = instanceProperty.GetValue(null);
+                    if (instance != null)
+                    {
+                        var isActiveProperty = miniGameManagerType.GetProperty("IsMiniGameActive");
+                        if (isActiveProperty != null)
+                        {
+                            bool isActive = (bool)isActiveProperty.GetValue(instance);
+                            if (isActive)
+                            {
+                                Debug.Log("[PetController] 快速点击检测成功，取消Bark触发");
+                                yield break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // MiniGameManager 可能尚未编译，忽略错误
         }
 
         // 如果不在小游戏中，且没有对话正在进行，则触发Bark

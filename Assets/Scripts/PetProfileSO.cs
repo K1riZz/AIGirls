@@ -66,4 +66,12 @@ public class PetProfileSO : ScriptableObject
     public Sprite bubbleSprite;
     [Tooltip("UI文本字体（如果为空则使用默认字体）")]
     public TMPro.TMP_FontAsset uiFontAsset;
+
+    [Header("剧情模式配置")]
+    [Tooltip("桌面壁纸Sprite（剧情模式的房间背景）")]
+    public Sprite desktopWallpaper;
+    [Tooltip("桌宠在剧情模式中的目标位置（相对于屏幕中心，0,0表示屏幕中心）")]
+    public Vector2 storyModePetPosition = Vector2.zero;
+    [Tooltip("桌宠移动到剧情模式位置的动画时长（秒）")]
+    public float storyModeMoveDuration = 1f;
 }

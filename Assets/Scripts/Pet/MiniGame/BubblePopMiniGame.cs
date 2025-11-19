@@ -305,6 +305,8 @@ public class BubblePopMiniGame : MiniGameBase
 
         Image background = uiInstance.AddComponent<Image>();
         background.color = new Color(0f, 0f, 0f, 0f); // 完全透明背景，不影响游玩
+        // 关键修复：背景Image的raycastTarget设置为false，避免阻挡气泡点击
+        background.raycastTarget = false;
 
         // 创建游戏区域
         GameObject gameAreaObj = new GameObject("GameArea");
@@ -331,9 +333,25 @@ public class BubblePopMiniGame : MiniGameBase
         // 等待一帧让RectTransform更新大小
         StartCoroutine(WaitForRectUpdate());
 
-        // 创建UI文本
+        // 先创建gameArea（确保它在Hierarchy中排在前面，即更早渲染）
+        // 然后创建UI文本（文本会渲染在gameArea之上）
+        // 最后创建的气泡会在最上层（因为Hierarchy顺序决定UI渲染顺序）
+        
+        // 创建UI文本（这些文本不应该阻挡点击事件）
         CreateUIText("TimerText", "时间: 30", new Vector2(0.5f, 0.95f), out timerText);
         CreateUIText("ScoreText", "得分: 0", new Vector2(0.5f, 0.05f), out scoreText);
+        
+        // 确保文本对象在gameArea之后（在Hierarchy中更靠后，以便气泡渲染在最上层）
+        if (timerText != null && gameArea != null)
+        {
+            timerText.transform.SetAsLastSibling();
+        }
+        if (scoreText != null && gameArea != null)
+        {
+            scoreText.transform.SetAsLastSibling();
+        }
+        
+        Debug.Log("[BubblePopMiniGame] UI文本已创建，raycastTarget设置为false，不会阻挡气泡点击");
     }
 
     /// <summary>
@@ -355,6 +373,9 @@ public class BubblePopMiniGame : MiniGameBase
         textComponent.fontSize = 24f;
         textComponent.alignment = TextAlignmentOptions.Center;
         textComponent.color = Color.white;
+        
+        // 关键修复：设置raycastTarget为false，避免文本UI阻挡气泡的点击事件
+        textComponent.raycastTarget = false;
         
         // 使用配置的字体，如果没有则使用默认字体
         if (uiFontAsset != null)
@@ -380,6 +401,8 @@ public class BubblePopMiniGame : MiniGameBase
         if (bubblePrefab != null)
         {
             bubbleObj = Instantiate(bubblePrefab, gameArea);
+            // 确保预制体实例也在最后（渲染在最上层）
+            bubbleObj.transform.SetAsLastSibling();
         }
         else
         {
@@ -444,6 +467,10 @@ public class BubblePopMiniGame : MiniGameBase
             
             // 确保Image的raycastTarget设置为true，以便接收点击
             image.raycastTarget = true;
+            
+            // 关键修复：确保气泡对象在Hierarchy中排在最后（即渲染在最上层）
+            // 这样即使有其他UI元素，气泡也会渲染在最上面
+            bubbleObj.transform.SetAsLastSibling();
         }
 
         // 随机位置

@@ -33,6 +33,12 @@ public class GameManager : MonoBehaviour
             gameObject.AddComponent<DesktopInputTracker>();
         }
 
+        // 初始化桌面图标控制器
+        InitializeDesktopIconController();
+
+        // 初始化剧情模式管理器
+        InitializeStoryModeManager();
+
         // 初始化小游戏管理器
         InitializeMiniGameManager();
 
@@ -59,6 +65,55 @@ public class GameManager : MonoBehaviour
 
         // 注册小游戏
         RegisterMiniGames();
+    }
+
+    /// <summary>
+    /// 初始化桌面图标控制器
+    /// </summary>
+    private void InitializeDesktopIconController()
+    {
+        if (DesktopIconController.Instance == null)
+        {
+            GameObject iconControllerObj = new GameObject("DesktopIconController");
+            iconControllerObj.transform.SetParent(transform);
+            iconControllerObj.AddComponent<DesktopIconController>();
+            Debug.Log("[GameManager] 创建了DesktopIconController");
+        }
+        else
+        {
+            Debug.Log("[GameManager] DesktopIconController已存在");
+        }
+    }
+
+    /// <summary>
+    /// 初始化剧情模式管理器
+    /// </summary>
+    private void InitializeStoryModeManager()
+    {
+        if (StoryModeManager.Instance == null)
+        {
+            GameObject storyModeObj = new GameObject("StoryModeManager");
+            storyModeObj.transform.SetParent(transform);
+            storyModeObj.AddComponent<StoryModeManager>();
+            Debug.Log("[GameManager] 创建了StoryModeManager");
+        }
+        else
+        {
+            Debug.Log("[GameManager] StoryModeManager已存在");
+        }
+
+        // 初始化剧情模式UI
+        if (StoryModeUI.Instance == null)
+        {
+            GameObject storyUIObj = new GameObject("StoryModeUI");
+            storyUIObj.transform.SetParent(transform);
+            storyUIObj.AddComponent<StoryModeUI>();
+            Debug.Log("[GameManager] 创建了StoryModeUI");
+        }
+        else
+        {
+            Debug.Log("[GameManager] StoryModeUI已存在");
+        }
     }
 
     /// <summary>

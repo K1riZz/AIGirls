@@ -46,3 +46,6 @@ MonoBehaviour:
   - {r: 0.5, g: 1, b: 1, a: 0.8}
   bubbleSprite: {fileID: 21300000, guid: 791a6c5f05fc747458c6461f7ffafbff, type: 3}
   uiFontAsset: {fileID: 11400000, guid: 11f1b00864c55054283ec352ef076193, type: 2}
+  desktopWallpaper: {fileID: 21300000, guid: 3188e22d86301aa47a156cac0d41e8e4, type: 3}
+  storyModePetPosition: {x: 0, y: 0}
+  storyModeMoveDuration: 1
