@@ -1,0 +1,208 @@
+{
+  "databaseID": "example_database",
+  "databaseName": "示例对话数据库",
+  "entryNodeIDs": [
+    "start_01",
+    "bubble_hello"
+  ],
+  "characters": [
+    {
+      "characterID": "pet_001",
+      "characterName": "小猫",
+      "defaultPortraitPath": "Characters/pet_portrait",
+      "nameColor": {
+        "r": 1.0,
+        "g": 0.8,
+        "b": 0.6,
+        "a": 1.0
+      },
+      "textColor": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "voiceVolume": 1.0,
+      "voicePitch": 1.0
+    },
+    {
+      "characterID": "player",
+      "characterName": "你",
+      "defaultPortraitPath": "",
+      "nameColor": {
+        "r": 0.6,
+        "g": 0.8,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "textColor": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "voiceVolume": 1.0,
+      "voicePitch": 1.0
+    }
+  ],
+  "nodes": [
+    {
+      "nodeID": "start_01",
+      "nodeType": "Text",
+      "dialogueMode": "Story",
+      "characterID": "pet_001",
+      "text": "你好，欢迎来到我的世界！",
+      "characterName": "小猫",
+      "portraitSpritePath": "Characters/pet_portrait",
+      "backgroundImagePath": "Backgrounds/room_01",
+      "nextNodeID": "start_02",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "soundEffectPath": "",
+      "backgroundMusicPath": "Music/bgm_01"
+    },
+    {
+      "nodeID": "start_02",
+      "nodeType": "Text",
+      "dialogueMode": "Story",
+      "characterID": "pet_001",
+      "text": "我是你的桌宠，很高兴认识你！",
+      "characterName": "小猫",
+      "portraitSpritePath": "Characters/pet_portrait",
+      "nextNodeID": "start_03",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0
+    },
+    {
+      "nodeID": "start_03",
+      "nodeType": "Choice",
+      "dialogueMode": "Story",
+      "characterID": "pet_001",
+      "text": "你想做什么？",
+      "characterName": "小猫",
+      "choices": [
+        {
+          "text": "和你聊天",
+          "nextNodeID": "chat_01",
+          "condition": "",
+          "effect": ""
+        },
+        {
+          "text": "一起玩游戏",
+          "nextNodeID": "game_01",
+          "condition": "",
+          "effect": ""
+        },
+        {
+          "text": "看看你的房间",
+          "nextNodeID": "room_01",
+          "condition": "",
+          "effect": ""
+        },
+        {
+          "text": "再见",
+          "nextNodeID": "end_01",
+          "condition": "",
+          "effect": ""
+        }
+      ],
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0
+    },
+    {
+      "nodeID": "chat_01",
+      "nodeType": "Text",
+      "dialogueMode": "Story",
+      "characterID": "pet_001",
+      "text": "太好了！我很喜欢和你聊天呢！",
+      "characterName": "小猫",
+      "portraitSpritePath": "Characters/pet_portrait",
+      "nextNodeID": "chat_02",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0
+    },
+    {
+      "nodeID": "chat_02",
+      "nodeType": "Text",
+      "dialogueMode": "Story",
+      "characterID": "pet_001",
+      "text": "你今天过得怎么样？",
+      "characterName": "小猫",
+      "portraitSpritePath": "Characters/pet_portrait",
+      "nextNodeID": "end_01",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0
+    },
+    {
+      "nodeID": "game_01",
+      "nodeType": "Text",
+      "dialogueMode": "Story",
+      "characterID": "pet_001",
+      "text": "好呀！我们来玩一个小游戏吧！",
+      "characterName": "小猫",
+      "portraitSpritePath": "Characters/pet_portrait",
+      "nextNodeID": "end_01",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "eventName": "StartMiniGame",
+      "eventData": "{\"gameType\":\"BubblePop\"}"
+    },
+    {
+      "nodeID": "room_01",
+      "nodeType": "Image",
+      "dialogueMode": "Story",
+      "characterID": "pet_001",
+      "text": "这就是我的房间，很温馨吧！",
+      "characterName": "小猫",
+      "portraitSpritePath": "Characters/pet_portrait",
+      "backgroundImagePath": "Backgrounds/room_01",
+      "insertImagePath": "Images/room_detail",
+      "nextNodeID": "end_01",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 3.0
+    },
+    {
+      "nodeID": "end_01",
+      "nodeType": "End",
+      "dialogueMode": "Story",
+      "characterID": "pet_001",
+      "text": "再见，期待下次见面！",
+      "characterName": "小猫",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 2.0
+    },
+    {
+      "nodeID": "bubble_hello",
+      "nodeType": "Text",
+      "dialogueMode": "Bubble",
+      "characterID": "pet_001",
+      "text": "喵~你好！",
+      "characterName": "小猫",
+      "nextNodeID": "",
+      "textSpeed": 50.0,
+      "autoAdvanceTime": 3.0
+    },
+    {
+      "nodeID": "bubble_happy",
+      "nodeType": "Text",
+      "dialogueMode": "Bubble",
+      "characterID": "pet_001",
+      "text": "好开心！",
+      "characterName": "小猫",
+      "nextNodeID": "",
+      "textSpeed": 50.0,
+      "autoAdvanceTime": 3.0
+    },
+    {
+      "nodeID": "bubble_sleepy",
+      "nodeType": "Text",
+      "dialogueMode": "Bubble",
+      "characterID": "pet_001",
+      "text": "有点困了呢...",
+      "characterName": "小猫",
+      "nextNodeID": "",
+      "textSpeed": 50.0,
+      "autoAdvanceTime": 3.0
+    }
+  ]
+}

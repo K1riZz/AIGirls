@@ -27,6 +27,14 @@ MonoBehaviour:
   idleChatterTitles:
   - Idle 1
   - Idle 2
+  dialogueDatabasePath: 
+  storyDialogueUIPrefab: {fileID: 6900321535424078292, guid: 7ff73b6e48114d0428e7aeb25ceee45f, type: 3}
+  bubbleDialogueUIPrefab: {fileID: 0}
+  choiceDialogueUIPrefab: {fileID: 0}
+  historyUIPrefab: {fileID: 0}
+  startDialogueNodeID: 
+  touchDialogueNodeID: 
+  idleDialogueNodeIDs: []
   idleChatterIntervalMin: 10
   idleChatterIntervalMax: 20
   rapidClickRequiredClicks: 10
