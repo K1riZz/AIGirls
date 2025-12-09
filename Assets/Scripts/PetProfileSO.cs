@@ -19,16 +19,7 @@ public class PetProfileSO : ScriptableObject
     [Range(0f, 1f)]
     public float wanderProbability = 0f; // 默认为0，暂时不进行漫游
 
-    [Header("对话系统集成（旧版Dialogue System for Unity）")]
-    public DialogueDatabase dialogueDatabase; // 该IP使用的对话数据库（旧版）
-    public string startConversationTitle; // 初始剧情对话的标题（旧版）
-    public string touchConversationTitle; // 点击时触发的闲聊对话标题（旧版）
-    [Tooltip("点击触发的闲聊对话的显示时间（秒）")]
-    public float touchConversationDuration = 4f; // 默认4秒
-    [Tooltip("闲置时随机触发的对话标题列表")]
-    public System.Collections.Generic.List<string> idleChatterTitles;
-
-    [Header("新对话系统配置（GalDialogue System）")]
+    [Header("新对话系统配置（NewDialogueSystem）")]
     [Tooltip("对话数据库JSON文件路径（相对于Resources文件夹，如：Dialogue/database.json）")]
     public string dialogueDatabasePath;
     [Tooltip("剧情对话UI预制体")]
@@ -43,6 +34,8 @@ public class PetProfileSO : ScriptableObject
     public string startDialogueNodeID;
     [Tooltip("点击对话节点ID")]
     public string touchDialogueNodeID;
+    [Tooltip("点击触发的对话显示时间（秒，已废弃，由节点配置控制）")]
+    public float touchConversationDuration = 4f; // 保留用于兼容性，实际由节点配置控制
     [Tooltip("闲置对话节点ID列表")]
     public System.Collections.Generic.List<string> idleDialogueNodeIDs;
     [Header("闲置闲聊")]

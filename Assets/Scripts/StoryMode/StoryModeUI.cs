@@ -30,9 +30,29 @@ public class StoryModeUI : MonoBehaviour
             return;
         }
         Instance = this;
+        
+        // 确保是根对象才能使用DontDestroyOnLoad
+        if (transform.parent != null)
+        {
+            transform.SetParent(null);
+        }
+        
         DontDestroyOnLoad(gameObject);
 
-        // 自动查找或创建UI元素
+        // 延迟初始化UI（等待MainCanvas实例化）
+        StartCoroutine(InitializeUIDelayed());
+    }
+
+    /// <summary>
+    /// 延迟初始化UI
+    /// </summary>
+    private System.Collections.IEnumerator InitializeUIDelayed()
+    {
+        // 等待几帧，确保MainCanvas已实例化
+        yield return null;
+        yield return null;
+        yield return null;
+
         InitializeUI();
     }
 
@@ -104,10 +124,17 @@ public class StoryModeUI : MonoBehaviour
     {
         // 查找MainCanvas - 使用多种方式查找
         GameObject mainCanvas = FindMainCanvas();
+        
+        // 如果找不到MainCanvas，创建一个独立的Canvas
         if (mainCanvas == null)
         {
-            Debug.LogError("[StoryModeUI] 无法创建退出菜单：未找到MainCanvas");
-            return;
+            Debug.LogWarning("[StoryModeUI] 未找到MainCanvas，创建独立的Canvas用于退出菜单");
+            mainCanvas = CreateIndependentCanvas();
+            if (mainCanvas == null)
+            {
+                Debug.LogError("[StoryModeUI] 无法创建退出菜单：无法创建Canvas");
+                return;
+            }
         }
 
         // 创建退出菜单面板
@@ -248,14 +275,49 @@ public class StoryModeUI : MonoBehaviour
             return canvases[0].gameObject;
         }
 
-        // 方法3：通过Tag查找（如果有设置Tag）
-        GameObject taggedCanvas = GameObject.FindGameObjectWithTag("MainCanvas");
-        if (taggedCanvas != null)
+        // 方法3：通过Tag查找（如果Tag存在，否则跳过）
+        // 注意：如果Tag未定义，FindGameObjectWithTag会抛出异常，所以需要用try-catch包裹
+        try
         {
-            return taggedCanvas;
+            GameObject taggedCanvas = GameObject.FindGameObjectWithTag("MainCanvas");
+            if (taggedCanvas != null)
+            {
+                return taggedCanvas;
+            }
+        }
+        catch (UnityException)
+        {
+            // Tag "MainCanvas" 未定义，忽略错误，继续使用其他方法
+        }
+        catch
+        {
+            // 其他异常，忽略
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// 创建独立的Canvas（当MainCanvas不存在时）
+    /// </summary>
+    private GameObject CreateIndependentCanvas()
+    {
+        GameObject canvasObj = new GameObject("StoryModeExitMenuCanvas");
+        canvasObj.transform.SetParent(null); // 作为场景根对象
+
+        Canvas canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 300; // 确保在最上层
+
+        CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.matchWidthOrHeight = 0.5f;
+
+        canvasObj.AddComponent<GraphicRaycaster>();
+
+        Debug.Log("[StoryModeUI] 创建了独立的退出菜单Canvas");
+        return canvasObj;
     }
 
     /// <summary>

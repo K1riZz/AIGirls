@@ -1,5 +1,4 @@
 using UnityEngine;
-using PixelCrushers.DialogueSystem;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -31,7 +30,7 @@ public class PetController : MonoBehaviour
 
     [Header("小游戏系统")]
     [Tooltip("快速点击检测器（自动查找）")]
-    public RapidClickDetector rapidClickDetector;
+    private MonoBehaviour rapidClickDetector; // 使用MonoBehaviour作为基类，避免编译错误
 
     public float Affection { get; set; }
     // 模拟的可移动桌面区域
@@ -46,7 +45,6 @@ public class PetController : MonoBehaviour
 
     private Coroutine menuTimeoutCoroutine;
     private Coroutine menuFadeCoroutine;
-    private Coroutine barkThenHideCoroutine;
 
     private CanvasGroup bottomMenuGroup;
     private CanvasGroup rightMenuGroup;
@@ -74,24 +72,8 @@ public class PetController : MonoBehaviour
             else Debug.LogError("PetController错误: 未能自动找到子对象 'RightMenu'。请检查其名称和层级是否正确。", this);
         }
 
-        // 自动查找或创建快速点击检测器
-        if (rapidClickDetector == null)
-        {
-            rapidClickDetector = GetComponentInChildren<RapidClickDetector>();
-            if (rapidClickDetector == null)
-            {
-                // 如果没有找到，尝试在Canvas子对象上创建
-                Transform canvasTransform = transform.Find("Canvas");
-                if (canvasTransform != null)
-                {
-                    rapidClickDetector = canvasTransform.gameObject.AddComponent<RapidClickDetector>();
-                }
-                else
-                {
-                    Debug.LogWarning("PetController: 未找到Canvas子对象，无法创建RapidClickDetector。请手动添加。", this);
-                }
-            }
-        }
+        // 自动查找或创建快速点击检测器（使用反射避免编译错误）
+        FindOrCreateRapidClickDetector();
 
         if (bottomMenu != null)
         {
@@ -102,6 +84,38 @@ public class PetController : MonoBehaviour
         {
             rightMenuGroup = rightMenu.GetComponent<CanvasGroup>();
             if (rightMenuGroup == null) Debug.LogError("PetController错误：RightMenu 物体上没有找到 CanvasGroup 组件！", rightMenu);
+        }
+
+        // 自动查找剧情按钮（在BottomMenu的子对象中）
+        if (storyModeButton == null && bottomMenu != null)
+        {
+            // 尝试查找名称包含"Story"或"剧情"的按钮
+            Transform storyBtnTransform = bottomMenu.transform.Find("StoryModeButton");
+            if (storyBtnTransform == null)
+            {
+                storyBtnTransform = bottomMenu.transform.Find("剧情按钮");
+            }
+            if (storyBtnTransform == null)
+            {
+                // 尝试在所有子对象中查找
+                foreach (Transform child in bottomMenu.transform)
+                {
+                    if (child.name.Contains("Story") || child.name.Contains("剧情"))
+                    {
+                        storyBtnTransform = child;
+                        break;
+                    }
+                }
+            }
+            if (storyBtnTransform != null)
+            {
+                storyModeButton = storyBtnTransform.gameObject;
+                Debug.Log($"[PetController] 自动找到了剧情按钮: {storyBtnTransform.name}");
+            }
+            else
+            {
+                Debug.LogWarning("[PetController] 未找到剧情按钮，请在BottomMenu下创建名为 'StoryModeButton' 或包含 'Story'/'剧情' 的按钮", this);
+            }
         }
     }
 
@@ -114,19 +128,161 @@ public class PetController : MonoBehaviour
             Initialize(initialProfile);
         }
 
-        // 订阅对话系统事件，以便在对话开始时强制进入idle状态
-        if (DialogueManager.Instance != null)
-        {
-            DialogueManager.Instance.conversationStarted += OnConversationStarted;
-        }
+        // 订阅新对话系统事件，以便在对话开始时强制进入idle状态（使用反射避免编译错误）
+        SubscribeToDialogueEvents();
     }
 
     void OnDestroy()
     {
         // 取消订阅事件，防止内存泄漏
-        if (DialogueManager.Instance != null)
+        UnsubscribeFromDialogueEvents();
+    }
+
+    // 当前对话会话ID（用于跟踪对话）
+    private string currentDialogueSessionID;
+
+    /// <summary>
+    /// 订阅对话系统事件（新对话系统，使用反射避免编译错误）
+    /// </summary>
+    private void SubscribeToDialogueEvents()
+    {
+        try
         {
-            DialogueManager.Instance.conversationStarted -= OnConversationStarted;
+            var dialogueSystemManagerType = System.Type.GetType("NewDialogueSystem.DialogueSystemManager");
+            if (dialogueSystemManagerType != null)
+            {
+                var instanceProperty = dialogueSystemManagerType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (instanceProperty != null)
+                {
+                    var instance = instanceProperty.GetValue(null);
+                    if (instance != null)
+                    {
+                        // 订阅对话会话开始事件
+                        var sessionStartedEvent = dialogueSystemManagerType.GetEvent("OnDialogueSessionStarted");
+                        if (sessionStartedEvent != null)
+                        {
+                            var handlerType = sessionStartedEvent.EventHandlerType;
+                            var handler = System.Delegate.CreateDelegate(handlerType, this, "OnDialogueSessionStarted");
+                            sessionStartedEvent.AddEventHandler(instance, handler);
+                        }
+
+                        // 订阅对话会话结束事件
+                        var sessionEndedEvent = dialogueSystemManagerType.GetEvent("OnDialogueSessionEnded");
+                        if (sessionEndedEvent != null)
+                        {
+                            var handlerType = sessionEndedEvent.EventHandlerType;
+                            var handler = System.Delegate.CreateDelegate(handlerType, this, "OnDialogueSessionEnded");
+                            sessionEndedEvent.AddEventHandler(instance, handler);
+                        }
+                    }
+                }
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[PetController] 订阅对话系统事件时发生错误: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 取消订阅对话系统事件（新对话系统，使用反射避免编译错误）
+    /// </summary>
+    private void UnsubscribeFromDialogueEvents()
+    {
+        try
+        {
+            var dialogueSystemManagerType = System.Type.GetType("NewDialogueSystem.DialogueSystemManager");
+            if (dialogueSystemManagerType != null)
+            {
+                var instanceProperty = dialogueSystemManagerType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (instanceProperty != null)
+                {
+                    var instance = instanceProperty.GetValue(null);
+                    if (instance != null)
+                    {
+                        // 取消订阅对话会话开始事件
+                        var sessionStartedEvent = dialogueSystemManagerType.GetEvent("OnDialogueSessionStarted");
+                        if (sessionStartedEvent != null)
+                        {
+                            var handlerType = sessionStartedEvent.EventHandlerType;
+                            var handler = System.Delegate.CreateDelegate(handlerType, this, "OnDialogueSessionStarted");
+                            sessionStartedEvent.RemoveEventHandler(instance, handler);
+                        }
+
+                        // 取消订阅对话会话结束事件
+                        var sessionEndedEvent = dialogueSystemManagerType.GetEvent("OnDialogueSessionEnded");
+                        if (sessionEndedEvent != null)
+                        {
+                            var handlerType = sessionEndedEvent.EventHandlerType;
+                            var handler = System.Delegate.CreateDelegate(handlerType, this, "OnDialogueSessionEnded");
+                            sessionEndedEvent.RemoveEventHandler(instance, handler);
+                        }
+                    }
+                }
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[PetController] 取消订阅对话系统事件时发生错误: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 对话会话开始事件处理（新对话系统）
+    /// </summary>
+    private void OnDialogueSessionStarted(string sessionID)
+    {
+        currentDialogueSessionID = sessionID;
+        Debug.Log("[PetController] 对话会话开始，强制进入idle状态");
+        ForceIdleState();
+    }
+
+    /// <summary>
+    /// 对话会话结束事件处理（新对话系统）
+    /// </summary>
+    private void OnDialogueSessionEnded(string sessionID)
+    {
+        if (currentDialogueSessionID == sessionID)
+        {
+            currentDialogueSessionID = null;
+        }
+        Debug.Log("[PetController] 对话会话结束");
+    }
+
+    /// <summary>
+    /// 查找或创建快速点击检测器（使用反射避免编译错误）
+    /// </summary>
+    private void FindOrCreateRapidClickDetector()
+    {
+        try
+        {
+            var rapidClickDetectorType = System.Type.GetType("RapidClickDetector");
+            if (rapidClickDetectorType != null)
+            {
+                // 尝试在子对象中查找
+                MonoBehaviour found = GetComponentInChildren(rapidClickDetectorType) as MonoBehaviour;
+                if (found != null)
+                {
+                    rapidClickDetector = found;
+                    return;
+                }
+
+                // 如果没有找到，尝试在Canvas子对象上创建
+                Transform canvasTransform = transform.Find("Canvas");
+                if (canvasTransform != null)
+                {
+                    rapidClickDetector = canvasTransform.gameObject.AddComponent(rapidClickDetectorType) as MonoBehaviour;
+                }
+                else
+                {
+                    Debug.LogWarning("PetController: 未找到Canvas子对象，无法创建RapidClickDetector。请手动添加。", this);
+                }
+            }
+        }
+        catch
+        {
+            // RapidClickDetector 可能尚未编译，忽略错误
+            Debug.LogWarning("PetController: RapidClickDetector类型未找到，快速点击检测功能将不可用。", this);
         }
     }
 
@@ -135,8 +291,8 @@ public class PetController : MonoBehaviour
         this.Profile = profile;
         this.name = $"Pet_{profile.petName}";
 
-        // 初始化好感度等数值, 从Dialogue System的变量中读取
-        Affection = DialogueLua.GetVariable("Affection").AsFloat;
+        // 初始化好感度等数值（从存档中读取，或使用默认值）
+        Affection = PlayerPrefs.GetFloat("PetAffection", 0f);
 
         // 初始化状态机
         StateMachine.Initialize(this);
@@ -204,13 +360,16 @@ public class PetController : MonoBehaviour
     {
         if (Profile == null)
         {
-            Debug.LogError("引用失败.", this);
+            Debug.LogError("[PetController] Profile引用失败.", this);
             return;
         }
+
+        Debug.Log($"[PetController] 左键点击，touchDialogueNodeID: {Profile.touchDialogueNodeID}");
 
         // 如果右键菜单是打开的，则左键点击任何地方（包括宠物自己）都应关闭菜单
         if (bottomMenuGroup != null && bottomMenuGroup.alpha > 0)
         {
+            Debug.Log("[PetController] 菜单打开中，关闭菜单");
             HideContextMenus();
             return;
         }
@@ -246,27 +405,51 @@ public class PetController : MonoBehaviour
             // MiniGameManager 可能尚未编译，忽略错误
         }
 
+        // 检查是否有对话节点ID配置
+        if (string.IsNullOrEmpty(Profile.touchDialogueNodeID))
+        {
+            Debug.LogWarning("[PetController] Profile.touchDialogueNodeID 未配置，无法触发对话");
+            return;
+        }
+
+        // 检查对话是否正在进行
+        if (IsDialogueActive())
+        {
+            Debug.Log("[PetController] 对话正在进行中，忽略点击");
+            return;
+        }
+
         // 记录点击用于快速点击检测（延迟触发Bark，避免快速点击时触发Bark）
         bool shouldTriggerBark = true;
         if (rapidClickDetector != null)
         {
-            // 记录点击，但不立即触发Bark
+            // 记录点击，但不立即触发Bark（使用反射调用）
             // 如果快速点击检测成功，将在OnRapidClickDetected中阻止Bark
-            rapidClickDetector.RegisterClick();
-            
-            // 延迟一小段时间再触发Bark，给快速点击检测时间判断
-            StartCoroutine(DelayedBarkCheck(Profile.touchConversationTitle, Profile.touchConversationDuration));
-            shouldTriggerBark = false;
+            try
+            {
+                var registerMethod = rapidClickDetector.GetType().GetMethod("RegisterClick");
+                if (registerMethod != null)
+                {
+                    registerMethod.Invoke(rapidClickDetector, null);
+                    
+                    // 延迟一小段时间再触发对话，给快速点击检测时间判断
+                    Debug.Log("[PetController] 使用快速点击检测器，延迟触发对话");
+                    StartCoroutine(DelayedBarkCheck(Profile.touchDialogueNodeID, Profile.touchConversationDuration));
+                    shouldTriggerBark = false;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[PetController] 快速点击检测器调用失败: {e.Message}");
+                // 如果调用失败，继续使用默认行为
+            }
         }
 
-        // 如果没有快速点击检测器，直接触发对话
-        if (shouldTriggerBark && !string.IsNullOrEmpty(Profile.touchConversationTitle))
+        // 如果没有快速点击检测器，直接触发对话（使用新对话系统）
+        if (shouldTriggerBark)
         {
-            // 如果没有其他对话正在进行，则触发点击对话
-            if (!DialogueManager.IsConversationActive)
-            {
-                TriggerBark(Profile.touchConversationTitle, Profile.touchConversationDuration);
-            }
+            Debug.Log($"[PetController] 直接触发对话: {Profile.touchDialogueNodeID}");
+            StartDialogue(Profile.touchDialogueNodeID);
         }
     }
 
@@ -288,15 +471,53 @@ public class PetController : MonoBehaviour
 
     private void ShowContextMenus()
     {
-        // 根据Profile中是否存在剧情对话来决定是否显示"剧情"按钮
-        if (storyModeButton != null)
-        {
-            bool isStoryAvailable = (Profile != null && !string.IsNullOrEmpty(Profile.startConversationTitle));
-            storyModeButton.SetActive(isStoryAvailable);
-        }
-
         // 显示菜单时，强制进入idle状态
         ForceIdleState();
+
+        // 如果还没找到剧情按钮，再次尝试查找
+        if (storyModeButton == null && bottomMenu != null)
+        {
+            Transform storyBtnTransform = bottomMenu.transform.Find("StoryModeButton");
+            if (storyBtnTransform == null)
+            {
+                storyBtnTransform = bottomMenu.transform.Find("剧情按钮");
+            }
+            if (storyBtnTransform == null)
+            {
+                foreach (Transform child in bottomMenu.transform)
+                {
+                    if (child.name.Contains("Story") || child.name.Contains("剧情"))
+                    {
+                        storyBtnTransform = child;
+                        break;
+                    }
+                }
+            }
+            if (storyBtnTransform != null)
+            {
+                storyModeButton = storyBtnTransform.gameObject;
+                Debug.Log($"[PetController] ShowContextMenus: 找到剧情按钮: {storyBtnTransform.name}");
+            }
+        }
+
+        // 根据Profile中是否存在剧情对话来决定是否显示"剧情"按钮
+        // 注意：在菜单淡入之前设置按钮状态，确保按钮正确显示
+        if (storyModeButton != null)
+        {
+            bool isStoryAvailable = (Profile != null && !string.IsNullOrEmpty(Profile.startDialogueNodeID));
+            storyModeButton.SetActive(isStoryAvailable);
+            Debug.Log($"[PetController] 剧情按钮状态: {(isStoryAvailable ? "显示" : "隐藏")}, startDialogueNodeID: {Profile?.startDialogueNodeID}, 按钮GameObject: {storyModeButton.name}");
+        }
+        else
+        {
+            Debug.LogWarning("[PetController] ShowContextMenus: storyModeButton 为 null，无法显示剧情按钮");
+        }
+
+        // 确保菜单GameObject是激活的
+        if (bottomMenu != null && !bottomMenu.activeSelf)
+        {
+            bottomMenu.SetActive(true);
+        }
 
         if (menuFadeCoroutine != null) StopCoroutine(menuFadeCoroutine);
         menuFadeCoroutine = StartCoroutine(FadeMenus(true));
@@ -367,21 +588,224 @@ public class PetController : MonoBehaviour
     }
 
     /// <summary>
-    /// 触发一个会自动隐藏的Bark对话。
+    /// 触发一个气泡对话（使用新对话系统）。
     /// </summary>
-    /// <param name="conversationTitle">对话标题</param>
-    /// <param name="duration">显示时长（秒）</param>
-    public void TriggerBark(string conversationTitle, float duration)
+    /// <param name="nodeID">对话节点ID</param>
+    /// <param name="duration">显示时长（秒，已废弃，由节点配置控制）</param>
+    public void TriggerBark(string nodeID, float duration)
     {
-        if (string.IsNullOrEmpty(conversationTitle) || duration <= 0 || DialogueManager.IsConversationActive)
+        if (string.IsNullOrEmpty(nodeID))
         {
             return;
         }
         
-       // 停止之前可能正在运行的任何BarkThenHide协程，防止UI冲突
-        if (barkThenHideCoroutine != null) StopCoroutine(barkThenHideCoroutine);
-        barkThenHideCoroutine = StartCoroutine(BarkThenHide(conversationTitle, duration));
+        // 检查对话是否正在进行
+        if (IsDialogueActive())
+        {
+            return;
+        }
+        
+        // 使用新对话系统触发气泡对话
+        StartDialogue(nodeID);
+    }
 
+    /// <summary>
+    /// 检查对话是否正在进行（新对话系统）
+    /// </summary>
+    private bool IsDialogueActive()
+    {
+        // 先检查当前会话ID
+        if (!string.IsNullOrEmpty(currentDialogueSessionID))
+        {
+            // 检查会话是否仍然活跃（使用反射，避免编译错误）
+            try
+            {
+                var dialogueSystemManagerType = System.Type.GetType("NewDialogueSystem.DialogueSystemManager");
+                if (dialogueSystemManagerType != null)
+                {
+                    var instanceProperty = dialogueSystemManagerType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                    if (instanceProperty != null)
+                    {
+                        var instance = instanceProperty.GetValue(null);
+                        if (instance != null)
+                        {
+                            var getSessionMethod = dialogueSystemManagerType.GetMethod("GetSession", new System.Type[] { typeof(string) });
+                            if (getSessionMethod != null)
+                            {
+                                var session = getSessionMethod.Invoke(instance, new object[] { currentDialogueSessionID });
+                                if (session != null)
+                                {
+                                    // 检查会话是否活跃
+                                    var isActiveProperty = session.GetType().GetProperty("isActive");
+                                    if (isActiveProperty != null)
+                                    {
+                                        return (bool)isActiveProperty.GetValue(session);
+                                    }
+                                    return true; // 如果找不到isActive属性，假设会话存在就是活跃的
+                                }
+                            }
+                            
+                            // 或者使用HasActiveSessions方法
+                            var hasActiveMethod = dialogueSystemManagerType.GetMethod("HasActiveSessions");
+                            if (hasActiveMethod != null)
+                            {
+                                return (bool)hasActiveMethod.Invoke(instance, null);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[PetController] 检查对话状态时发生错误: {e.Message}");
+            }
+        }
+        
+        // 使用更通用的方法检查是否有任何活跃会话
+        try
+        {
+            var dialogueSystemManagerType = System.Type.GetType("NewDialogueSystem.DialogueSystemManager");
+            if (dialogueSystemManagerType != null)
+            {
+                var instanceProperty = dialogueSystemManagerType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (instanceProperty != null)
+                {
+                    var instance = instanceProperty.GetValue(null);
+                    if (instance != null)
+                    {
+                        var hasActiveMethod = dialogueSystemManagerType.GetMethod("HasActiveSessions");
+                        if (hasActiveMethod != null)
+                        {
+                            return (bool)hasActiveMethod.Invoke(instance, null);
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // 新对话系统可能尚未编译，返回false
+        }
+        
+        return false;
+    }
+
+    /// <summary>
+    /// 开始对话（新对话系统，使用反射避免编译错误）
+    /// </summary>
+    private void StartDialogue(string nodeID)
+    {
+        if (string.IsNullOrEmpty(nodeID))
+        {
+            Debug.LogWarning("[PetController] StartDialogue: nodeID 为空");
+            return;
+        }
+
+        try
+        {
+            // 尝试多种方式查找类型
+            System.Type dialogueSystemManagerType = System.Type.GetType("NewDialogueSystem.DialogueSystemManager");
+            
+            // 如果找不到，尝试从所有已加载的程序集中查找
+            if (dialogueSystemManagerType == null)
+            {
+                foreach (var assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    dialogueSystemManagerType = assembly.GetType("NewDialogueSystem.DialogueSystemManager");
+                    if (dialogueSystemManagerType != null)
+                    {
+                        break;
+                    }
+                }
+            }
+            
+            if (dialogueSystemManagerType == null)
+            {
+                Debug.LogError("[PetController] 无法找到 NewDialogueSystem.DialogueSystemManager 类型！");
+                return;
+            }
+
+            var instanceProperty = dialogueSystemManagerType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (instanceProperty == null)
+            {
+                Debug.LogError("[PetController] DialogueSystemManager 没有 Instance 属性");
+                return;
+            }
+
+            var instance = instanceProperty.GetValue(null);
+            if (instance == null)
+            {
+                Debug.LogError("[PetController] DialogueSystemManager.Instance 为 null");
+                return;
+            }
+
+            // 尝试查找StartDialogue方法（可能有一个或两个参数）
+            System.Reflection.MethodInfo startMethod = null;
+            
+            // 先尝试查找两个参数的方法（startNodeID, sessionID）
+            startMethod = dialogueSystemManagerType.GetMethod("StartDialogue", new System.Type[] { typeof(string), typeof(string) });
+            if (startMethod == null)
+            {
+                // 尝试只带一个参数的方法
+                startMethod = dialogueSystemManagerType.GetMethod("StartDialogue", new System.Type[] { typeof(string) });
+            }
+
+            if (startMethod == null)
+            {
+                Debug.LogError("[PetController] DialogueSystemManager 没有 StartDialogue 方法");
+                return;
+            }
+
+            // 调用StartDialogue方法
+            // 根据方法签名决定参数：如果方法需要2个参数，第二个为sessionID（可选）
+            object session;
+            var methodParams = startMethod.GetParameters();
+            if (methodParams.Length == 1)
+            {
+                session = startMethod.Invoke(instance, new object[] { nodeID });
+            }
+            else if (methodParams.Length == 2)
+            {
+                session = startMethod.Invoke(instance, new object[] { nodeID, null }); // sessionID为null时自动生成
+            }
+            else
+            {
+                Debug.LogError($"[PetController] StartDialogue方法参数数量不正确: {methodParams.Length}");
+                return;
+            }
+            
+            if (session != null)
+            {
+                // 设置对话UI的目标位置为宠物位置（用于气泡对话跟随）
+                var sessionType = session.GetType();
+                var setTargetMethod = sessionType.GetMethod("SetTargetTransform");
+                Debug.Log($"[PetController] 查找 SetTargetTransform 方法: {(setTargetMethod != null ? "成功" : "失败")}");
+                if (setTargetMethod != null)
+                {
+                    setTargetMethod.Invoke(session, new object[] { this.transform });
+                    Debug.Log($"[PetController] 已调用 SetTargetTransform，目标: {this.name}");
+                }
+                else
+                {
+                    Debug.LogWarning("[PetController] 未找到 SetTargetTransform 方法");
+                }
+                
+                // 获取会话ID
+                var sessionIDProperty = sessionType.GetProperty("sessionID");
+                if (sessionIDProperty != null)
+                {
+                    currentDialogueSessionID = (string)sessionIDProperty.GetValue(session);
+                }
+            }
+            else
+            {
+                Debug.LogError("[PetController] 启动对话失败");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[PetController] 启动对话时发生错误: {e.Message}\n{e.StackTrace}");
+        }
     }
     // 由PetInteraction调用
     public void OnBeginDrag()
@@ -417,7 +841,7 @@ public class PetController : MonoBehaviour
                         var enterMethod = storyModeManagerType.GetMethod("EnterStoryMode", new System.Type[] { typeof(string) });
                         if (enterMethod != null)
                         {
-                            enterMethod.Invoke(instance, new object[] { Profile.startConversationTitle });
+                            enterMethod.Invoke(instance, new object[] { Profile.startDialogueNodeID });
                             return;
                         }
                     }
@@ -429,11 +853,11 @@ public class PetController : MonoBehaviour
             // StoryModeManager 可能尚未编译，使用备用方案
         }
         
-        // 备用方案：直接触发对话（保持原有行为）
+        // 备用方案：直接触发对话（使用新对话系统）
         Debug.LogWarning("[PetController] StoryModeManager未找到，使用备用方案直接触发对话");
-        if (!string.IsNullOrEmpty(Profile.startConversationTitle))
+        if (!string.IsNullOrEmpty(Profile.startDialogueNodeID))
         {
-            DialogueManager.StartConversation(Profile.startConversationTitle, this.transform);
+            StartDialogue(Profile.startDialogueNodeID);
         }
     }
 
@@ -517,8 +941,8 @@ public class PetController : MonoBehaviour
     /// </summary>
     public bool ShouldForceIdle()
     {
-        // 检查对话是否激活
-        if (DialogueManager.IsConversationActive)
+        // 检查对话是否激活（新对话系统）
+        if (IsDialogueActive())
         {
             return true;
         }
@@ -579,14 +1003,6 @@ public class PetController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 对话开始时的事件处理
-    /// </summary>
-    private void OnConversationStarted(Transform actor)
-    {
-        Debug.Log("[PetController] 对话开始，强制进入idle状态");
-        ForceIdleState();
-    }
     
     /// <summary>
     /// 显示玩家输入的内容作为一个Bark气泡。
@@ -602,10 +1018,10 @@ public class PetController : MonoBehaviour
             StateMachine.SwitchState(new IdleState(this));
         }
 
-        // 使用Dialogue System的BarkString来显示任意文本
-        // 这会打断任何当前正在显示的Bark
-        // BarkString(文本, 说话者, 听者, 序列)
-        DialogueManager.BarkString(message, this.transform);
+        // 使用新对话系统显示玩家输入（可以通过创建一个临时的气泡对话节点来实现）
+        // 或者直接使用BubbleDialogueUI显示文本
+        // TODO: 实现直接显示玩家输入的功能
+        Debug.Log($"[PetController] 玩家输入: {message}");
 
         Debug.Log($"[PetController] 显示玩家输入: '{message}'");
         // 重置闲聊计时器，避免立即触发闲聊
@@ -613,83 +1029,16 @@ public class PetController : MonoBehaviour
     }
 
     /// <summary>
-    /// 安全地隐藏当前正在显示的任何Bark气泡，避免调用StopAllCoroutines()。
+    /// 安全地隐藏当前正在显示的任何对话气泡（已废弃，由新对话系统管理）
     /// </summary>
     public void SafelyHideCurrentBark()
     {
-        var barkUI = DialogueActor.GetBarkUI(this.transform);
-        if (barkUI != null && barkUI.isPlaying)
-        {
-            var standardBarkUI = barkUI as StandardBarkUI;
-            if (standardBarkUI != null)
-            {
-                StartCoroutine(FadeOutAndDisableBark(standardBarkUI));
-            }
-            else
-            {
-                // 对于非标准UI，只能调用原始的Hide方法
-                barkUI.Hide();
-            }
-        }
-    }
-
-    private IEnumerator FadeOutAndDisableBark(StandardBarkUI barkUI)
-    {
-        var barkCanvasGroup = barkUI.GetComponent<CanvasGroup>();
-        if (barkCanvasGroup != null && barkCanvasGroup.alpha > 0)
-        {
-            float fadeTime = 0.2f;
-            float timer = 0f;
-            while (timer < fadeTime)
-            {
-                timer += Time.deltaTime;
-                barkCanvasGroup.alpha = Mathf.Lerp(1, 0, timer / fadeTime);
-                yield return null;
-            }
-        }
-        barkUI.gameObject.SetActive(false); // 直接禁用，不调用Hide()
-    }
-
-private IEnumerator BarkThenHide(string conversationTitle, float duration)
-    {
-        // 1. 触发Bark，让它显示出来
-        // DialogueManager.Bark 会找到或创建一个 Bark UI 并让它显示内容。
-        // 我们在它显示后立即获取这个UI的引用。
-        DialogueManager.Bark(conversationTitle, this.transform);
-        Debug.Log($"[PetController] Bark '{conversationTitle}' 显示，持续 {duration} 秒。");
-        
-        // 获取刚刚被激活的Bark UI实例
-        var barkUI = DialogueActor.GetBarkUI(this.transform);
-        var standardBarkUI = barkUI as StandardBarkUI;
-        
-        // 2. 等待指定的时长。
-        yield return new WaitForSeconds(duration);
-        
-        // 3. 安全地隐藏这个协程自己创建的UI实例
-        // 检查UI实例是否存在，并且它的alpha值大于0（意味着它当前是可见的）
-        if (standardBarkUI != null && standardBarkUI.gameObject.activeInHierarchy )
-        {
-            var barkCanvasGroup = standardBarkUI.GetComponent<CanvasGroup>();
-            if (barkCanvasGroup != null && barkCanvasGroup.alpha > 0)
-            {
-                Debug.Log($"[PetController] Bark '{conversationTitle}' 协程结束，正在手动隐藏其UI。");
-                // 手动实现淡出动画
-                float fadeTime = 0.2f;
-                float timer = 0f;
-                while (timer < fadeTime)
-                {
-                    timer += Time.deltaTime;
-                    barkCanvasGroup.alpha = Mathf.Lerp(1, 0, timer / fadeTime);
-                    yield return null;
-                }
-                
-                // 动画结束后，禁用交互并直接禁用GameObject，完全绕过Hide()方法
-                barkCanvasGroup.interactable = false;
-                barkCanvasGroup.blocksRaycasts = false;
-                standardBarkUI.gameObject.SetActive(false);
-            }
-        }
-        barkThenHideCoroutine = null;
+        // 新对话系统会自动管理对话的显示和隐藏，此方法已废弃
+        // 如果需要强制结束对话，可以使用：
+        // if (DialogueSystemManager.Instance != null && !string.IsNullOrEmpty(currentDialogueSessionID))
+        // {
+        //     DialogueSystemManager.Instance.EndDialogue(currentDialogueSessionID);
+        // }
     }
 
     /// <summary>
@@ -699,7 +1048,7 @@ private IEnumerator BarkThenHide(string conversationTitle, float duration)
     {
         yield return new WaitForSeconds(0.1f); // 延迟0.1秒
 
-        // 如果在这期间触发了小游戏，则不触发Bark（使用反射避免编译错误）
+        // 如果在这期间触发了小游戏，则不触发对话（使用反射避免编译错误）
         try
         {
             var miniGameManagerType = System.Type.GetType("MiniGameManager");
@@ -717,7 +1066,7 @@ private IEnumerator BarkThenHide(string conversationTitle, float duration)
                             bool isActive = (bool)isActiveProperty.GetValue(instance);
                             if (isActive)
                             {
-                                Debug.Log("[PetController] 快速点击检测成功，取消Bark触发");
+                                Debug.Log("[PetController] 快速点击检测成功，取消对话触发");
                                 yield break;
                             }
                         }
@@ -730,8 +1079,8 @@ private IEnumerator BarkThenHide(string conversationTitle, float duration)
             // MiniGameManager 可能尚未编译，忽略错误
         }
 
-        // 如果不在小游戏中，且没有对话正在进行，则触发Bark
-        if (!string.IsNullOrEmpty(conversationTitle) && !DialogueManager.IsConversationActive)
+        // 如果不在小游戏中，且没有对话正在进行，则触发对话（新对话系统）
+        if (!string.IsNullOrEmpty(conversationTitle) && !IsDialogueActive())
         {
             TriggerBark(conversationTitle, duration);
         }

@@ -34,6 +34,13 @@ public class DesktopIconController : MonoBehaviour
             return;
         }
         instance = this;
+        
+        // 确保是根对象才能使用DontDestroyOnLoad
+        if (transform.parent != null)
+        {
+            transform.SetParent(null);
+        }
+        
         DontDestroyOnLoad(gameObject);
     }
 

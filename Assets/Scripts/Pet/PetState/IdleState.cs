@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using PixelCrushers.DialogueSystem;
 
 public class IdleState : PetBaseState
 {
@@ -80,14 +79,45 @@ public class IdleState : PetBaseState
 
     private void TryStartIdleChatter()
     {
-        // 检查当前是否有其他对话正在进行
-        if (!DialogueManager.IsConversationActive && controller.Profile.idleChatterTitles.Count > 0)
+        // 检查当前是否有其他对话正在进行（新对话系统，使用反射避免编译错误）
+        try
+        {
+            var dialogueSystemManagerType = System.Type.GetType("NewDialogueSystem.DialogueSystemManager");
+            if (dialogueSystemManagerType != null)
+            {
+                var instanceProperty = dialogueSystemManagerType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (instanceProperty != null)
+                {
+                    var instance = instanceProperty.GetValue(null);
+                    if (instance != null)
+                    {
+                        var hasActiveMethod = dialogueSystemManagerType.GetMethod("HasActiveSessions");
+                        if (hasActiveMethod != null)
+                        {
+                            bool hasActive = (bool)hasActiveMethod.Invoke(instance, null);
+                            if (hasActive)
+                            {
+                                return; // 对话正在进行，不触发闲聊
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // 新对话系统可能尚未编译，继续执行
+        }
+
+        // 检查是否有可用的闲置对话节点
+        if (controller.Profile.idleDialogueNodeIDs != null && controller.Profile.idleDialogueNodeIDs.Count > 0)
         {
             Debug.Log("尝试触发闲置闲聊...");
-            int index = Random.Range(0, controller.Profile.idleChatterTitles.Count);
-            string chatterTitle = controller.Profile.idleChatterTitles[index];
-            // 调用Controller中的通用方法来触发一个会自动消失的Bark
-            controller.TriggerBark(chatterTitle, controller.Profile.touchConversationDuration);
+            int index = Random.Range(0, controller.Profile.idleDialogueNodeIDs.Count);
+            string chatterNodeID = controller.Profile.idleDialogueNodeIDs[index];
+            // 调用Controller中的通用方法来触发一个气泡对话
+            // duration参数已废弃，由对话节点配置控制，这里传0即可
+            controller.TriggerBark(chatterNodeID, 0f);
             // 闲聊后，重置计时器
             controller.ResetIdleChatterTimer();
         }

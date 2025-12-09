@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-using PixelCrushers.DialogueSystem;
+using NewDialogueSystem;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -34,6 +34,13 @@ public class StoryModeManager : MonoBehaviour
             return;
         }
         Instance = this;
+        
+        // 确保是根对象才能使用DontDestroyOnLoad
+        if (transform.parent != null)
+        {
+            transform.SetParent(null);
+        }
+        
         DontDestroyOnLoad(gameObject);
     }
 
@@ -277,10 +284,17 @@ public class StoryModeManager : MonoBehaviour
             WindowsController.Instance.EnterFullscreenMode();
         }
 
-        // 8. 剧情模式：触发对话
-        if (!string.IsNullOrEmpty(conversationTitle))
+        // 8. 剧情模式：清理之前的对话会话和UI（避免气泡对话残留）
+        if (DialogueSystemManager.Instance != null)
         {
-            DialogueManager.StartConversation(conversationTitle, pet.transform);
+            DialogueSystemManager.Instance.EndAllSessions();
+            DialogueSystemManager.Instance.ClearAllUIInstances();
+        }
+
+        // 9. 剧情模式：触发对话（使用新对话系统）
+        if (!string.IsNullOrEmpty(conversationTitle) && DialogueSystemManager.Instance != null)
+        {
+            DialogueSystemManager.Instance.StartDialogue(conversationTitle);
         }
 
         // 9. 触发事件
@@ -341,10 +355,11 @@ public class StoryModeManager : MonoBehaviour
             WindowsController.Instance.ExitFullscreenMode();
         }
 
-        // 7. 剧情模式：如果对话仍在进行，结束对话
-        if (DialogueManager.IsConversationActive)
+        // 7. 剧情模式：清理所有对话会话和UI（退出剧情模式时）
+        if (DialogueSystemManager.Instance != null)
         {
-            DialogueManager.StopConversation();
+            DialogueSystemManager.Instance.EndAllSessions();
+            DialogueSystemManager.Instance.ClearAllUIInstances();
         }
 
         // 8. 触发事件

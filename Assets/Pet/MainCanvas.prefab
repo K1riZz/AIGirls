@@ -607,7 +607,7 @@ GameObject:
   - component: {fileID: 3265152801233392777}
   m_Layer: 5
   m_Name: MainCanvas
-  m_TagString: Untagged
+  m_TagString: MainCanvas
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3868,7 +3868,6 @@ MonoBehaviour:
   menuFadeDuration: 0.2
   storyModeButton: {fileID: 7185729936949685175}
   playerInputContainer: {fileID: 1991336775774001138}
-  rapidClickDetector: {fileID: 1685264696581561860}
   idleChatterTimer: 0
   nextChatterTime: 0
 --- !u!114 &7337043514488423118

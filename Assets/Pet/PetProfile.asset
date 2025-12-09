@@ -20,21 +20,17 @@ MonoBehaviour:
   idleTimeMin: 3
   idleTimeMax: 8
   wanderProbability: 0
-  dialogueDatabase: {fileID: 11400000, guid: b6650d703b8299540830153dce10cd09, type: 2}
-  startConversationTitle: StroyConversation1
-  touchConversationTitle: TouchConversation1
+  dialogueDatabasePath: Dialogue/database
+  storyDialogueUIPrefab: {fileID: 80107667919380115, guid: 7ff73b6e48114d0428e7aeb25ceee45f, type: 3}
+  bubbleDialogueUIPrefab: {fileID: 2529979338453373351, guid: b1f1afcdfe52fb945b943d8338f15435, type: 3}
+  choiceDialogueUIPrefab: {fileID: 1067284278886575217, guid: 27b01ff37dbe3cf469f518967b6efa5c, type: 3}
+  historyUIPrefab: {fileID: 5973731988247826212, guid: a5cd7e3b64b8d3b459373230bc7e74ae, type: 3}
+  startDialogueNodeID: story_start
+  touchDialogueNodeID: start
   touchConversationDuration: 1
-  idleChatterTitles:
-  - Idle 1
-  - Idle 2
-  dialogueDatabasePath: 
-  storyDialogueUIPrefab: {fileID: 6900321535424078292, guid: 7ff73b6e48114d0428e7aeb25ceee45f, type: 3}
-  bubbleDialogueUIPrefab: {fileID: 0}
-  choiceDialogueUIPrefab: {fileID: 0}
-  historyUIPrefab: {fileID: 0}
-  startDialogueNodeID: 
-  touchDialogueNodeID: 
-  idleDialogueNodeIDs: []
+  idleDialogueNodeIDs:
+  - 
+  - 
   idleChatterIntervalMin: 10
   idleChatterIntervalMax: 20
   rapidClickRequiredClicks: 10
