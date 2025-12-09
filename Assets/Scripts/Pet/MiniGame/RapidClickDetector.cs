@@ -78,13 +78,6 @@ public class RapidClickDetector : MonoBehaviour
     {
         Debug.Log($"[RapidClickDetector] 收到点击事件");
 
-        // 检查是否在剧情模式中，如果是则不触发小游戏
-        if (PixelCrushers.DialogueSystem.DialogueManager.IsConversationActive)
-        {
-            Debug.Log("[RapidClickDetector] 当前在剧情模式中，忽略点击");
-            return;
-        }
-
         // 检查是否已经在小游戏中
         if (miniGameManager != null && miniGameManager.IsMiniGameActive)
         {
