@@ -23,7 +23,7 @@ MonoBehaviour:
   dialogueDatabasePath: Dialogue/database
   storyDialogueUIPrefab: {fileID: 80107667919380115, guid: 7ff73b6e48114d0428e7aeb25ceee45f, type: 3}
   bubbleDialogueUIPrefab: {fileID: 2529979338453373351, guid: b1f1afcdfe52fb945b943d8338f15435, type: 3}
-  choiceDialogueUIPrefab: {fileID: 1067284278886575217, guid: 27b01ff37dbe3cf469f518967b6efa5c, type: 3}
+  choiceDialogueUIPrefab: {fileID: 432120278071965904, guid: 27b01ff37dbe3cf469f518967b6efa5c, type: 3}
   historyUIPrefab: {fileID: 5973731988247826212, guid: a5cd7e3b64b8d3b459373230bc7e74ae, type: 3}
   startDialogueNodeID: story_start
   touchDialogueNodeID: start

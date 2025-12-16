@@ -18,6 +18,9 @@ namespace NewDialogueSystem
         [Tooltip("数据库JSON文件路径（相对于Resources文件夹）")]
         public string databaseJsonPath;
 
+        [Tooltip("章节数据库（用于历史对话分组）")]
+        public ChapterDatabase chapterDatabase;
+
         [Header("UI配置")]
         [Tooltip("对话UI容器（所有对话UI的父对象）")]
         public Transform dialogueUIContainer;
@@ -47,6 +50,9 @@ namespace NewDialogueSystem
         private Dictionary<string, IDialogueUI> uiInstances = new Dictionary<string, IDialogueUI>();
         private List<DialogueHistoryEntry> dialogueHistory = new List<DialogueHistoryEntry>();
         private Dictionary<DialogueDisplayMode, GameObject> defaultUIPrefabs = new Dictionary<DialogueDisplayMode, GameObject>();
+        
+        // 章节解锁状态（已访问过的章节ID集合）
+        private HashSet<string> unlockedChapters = new HashSet<string>();
 
         // 事件
         public System.Action<DialogueNode> OnDialogueNodeStarted;
@@ -83,6 +89,12 @@ namespace NewDialogueSystem
         {
             // 加载对话数据库
             LoadDialogueDatabase();
+            
+            // 初始化章节数据库
+            if (chapterDatabase != null)
+            {
+                chapterDatabase.Initialize();
+            }
         }
 
         /// <summary>
@@ -322,6 +334,12 @@ namespace NewDialogueSystem
         {
             dialogueHistory.Add(entry);
             
+            // 解锁对应章节（如果entry有chapterID）
+            if (!string.IsNullOrEmpty(entry.chapterID))
+            {
+                unlockedChapters.Add(entry.chapterID);
+            }
+            
             // 限制历史记录数量
             if (dialogueHistory.Count > maxHistoryEntries)
             {
@@ -329,6 +347,37 @@ namespace NewDialogueSystem
             }
 
             OnDialogueHistoryAdded?.Invoke(entry);
+        }
+
+        /// <summary>
+        /// 检查章节是否已解锁
+        /// </summary>
+        public bool IsChapterUnlocked(string chapterID)
+        {
+            if (string.IsNullOrEmpty(chapterID)) return false;
+            return unlockedChapters.Contains(chapterID);
+        }
+
+        /// <summary>
+        /// 获取所有已解锁的章节ID
+        /// </summary>
+        public HashSet<string> GetUnlockedChapters()
+        {
+            return new HashSet<string>(unlockedChapters);
+        }
+
+        /// <summary>
+        /// 获取指定章节的历史记录
+        /// </summary>
+        public List<DialogueHistoryEntry> GetHistoryByChapter(string chapterID)
+        {
+            if (string.IsNullOrEmpty(chapterID))
+            {
+                // 返回没有章节的历史记录
+                return dialogueHistory.FindAll(e => string.IsNullOrEmpty(e.chapterID));
+            }
+            
+            return dialogueHistory.FindAll(e => e.chapterID == chapterID);
         }
 
         /// <summary>
@@ -426,6 +475,13 @@ namespace NewDialogueSystem
         public string characterName;
         public string text;
         public System.DateTime timestamp;
+        
+        // 图片信息
+        public string backgroundImagePath;
+        public List<string> insertImagePaths;
+        
+        // 章节信息
+        public string chapterID;
 
         public DialogueHistoryEntry(DialogueNode node, CharacterData character, string sessionID)
         {
@@ -435,6 +491,13 @@ namespace NewDialogueSystem
             this.characterName = character != null ? character.characterName : "未知";
             this.text = node.text;
             this.timestamp = System.DateTime.Now;
+            
+            // 保存图片信息
+            this.backgroundImagePath = node.backgroundImagePath;
+            this.insertImagePaths = node.insertImagePaths != null ? new List<string>(node.insertImagePaths) : new List<string>();
+            
+            // 保存章节ID
+            this.chapterID = node.chapterID;
         }
     }
 }

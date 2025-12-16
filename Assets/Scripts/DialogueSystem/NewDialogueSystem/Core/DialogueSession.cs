@@ -241,6 +241,13 @@ namespace NewDialogueSystem
             // 显示对话
             currentUI.ShowDialogue(node, character);
 
+            // 添加到历史记录（仅在剧情模式下记录）
+            if (node.displayMode == DialogueDisplayMode.Story && DialogueSystemManager.Instance != null)
+            {
+                DialogueHistoryEntry historyEntry = new DialogueHistoryEntry(node, character, sessionID);
+                DialogueSystemManager.Instance.AddHistoryEntry(historyEntry);
+            }
+
             // 订阅对话完成事件
             currentUI.OnDialogueCompleted = () =>
             {

@@ -50,6 +50,9 @@ namespace NewDialogueSystem
         [Tooltip("角色名称覆盖（如果为空则使用角色的默认名称）")]
         public string characterNameOverride;
 
+        [Tooltip("章节ID（用于历史对话分组）")]
+        public string chapterID;
+
         [Header("对话内容")]
         [Tooltip("对话文本内容")]
         [TextArea(3, 10)]

@@ -29,6 +29,9 @@ namespace NewDialogueSystem
         [Tooltip("点击继续提示")]
         public GameObject continueHint;
 
+        [Tooltip("历史对话按钮（点击打开历史对话UI）")]
+        public Button historyButton;
+
         private Coroutine autoAdvanceCoroutine;
 
         public override bool IsShowing => isShowing;
@@ -52,6 +55,12 @@ namespace NewDialogueSystem
             if (dialoguePanel != null)
             {
                 dialoguePanel.SetActive(false);
+            }
+
+            // 设置历史按钮事件
+            if (historyButton != null)
+            {
+                historyButton.onClick.AddListener(OnHistoryButtonClicked);
             }
         }
 
@@ -108,6 +117,20 @@ namespace NewDialogueSystem
                             backgroundImage = img;
                             break;
                         }
+                    }
+                }
+            }
+
+            // 自动查找历史按钮
+            if (historyButton == null)
+            {
+                Button[] buttons = GetComponentsInChildren<Button>();
+                foreach (var btn in buttons)
+                {
+                    if (btn.name.Contains("History") || btn.name.Contains("历史"))
+                    {
+                        historyButton = btn;
+                        break;
                     }
                 }
             }
@@ -255,6 +278,28 @@ namespace NewDialogueSystem
             // 检测点击继续
             if (isShowing && Input.GetMouseButtonDown(0))
             {
+                // 检查是否点击了历史按钮（避免点击按钮时触发对话继续）
+                if (historyButton != null && historyButton.gameObject.activeInHierarchy)
+                {
+                    RectTransform buttonRect = historyButton.GetComponent<RectTransform>();
+                    if (buttonRect != null)
+                    {
+                        Vector2 localPoint;
+                        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                            buttonRect,
+                            Input.mousePosition,
+                            null,
+                            out localPoint
+                        );
+                        
+                        if (buttonRect.rect.Contains(localPoint))
+                        {
+                            // 点击了历史按钮，不处理对话继续
+                            return;
+                        }
+                    }
+                }
+
                 // 检查点击是否在UI区域内（避免点击其他区域触发）
                 if (dialoguePanel != null)
                 {
@@ -302,6 +347,61 @@ namespace NewDialogueSystem
                 continueHint.SetActive(false);
             }
             OnDialogueCompleted?.Invoke();
+        }
+
+        /// <summary>
+        /// 历史按钮点击事件
+        /// </summary>
+        private void OnHistoryButtonClicked()
+        {
+            OpenHistoryUI();
+        }
+
+        /// <summary>
+        /// 打开历史对话UI
+        /// </summary>
+        private void OpenHistoryUI()
+        {
+            if (DialogueSystemManager.Instance == null) return;
+
+            // 获取历史UI预制体
+            GameObject historyUIPrefab = DialogueSystemManager.Instance.defaultHistoryDialogueUIPrefab;
+            if (historyUIPrefab == null)
+            {
+                Debug.LogWarning("[StoryDialogueUI] 历史对话UI预制体未配置");
+                return;
+            }
+
+            // 查找现有的历史UI实例
+            HistoryDialogueUI existingHistoryUI = FindObjectOfType<HistoryDialogueUI>();
+            
+            if (existingHistoryUI != null)
+            {
+                // 如果已存在，直接显示
+                existingHistoryUI.ShowHistory();
+            }
+            else
+            {
+                // 如果不存在，创建新实例
+                Transform container = DialogueSystemManager.Instance.dialogueUIContainer;
+                if (container == null)
+                {
+                    container = DialogueSystemManager.Instance.transform;
+                }
+
+                GameObject historyUIObj = Instantiate(historyUIPrefab, container);
+                historyUIObj.name = "HistoryDialogueUI";
+
+                HistoryDialogueUI historyUI = historyUIObj.GetComponent<HistoryDialogueUI>();
+                if (historyUI != null)
+                {
+                    historyUI.ShowHistory();
+                }
+                else
+                {
+                    Debug.LogError("[StoryDialogueUI] 历史对话UI预制体缺少HistoryDialogueUI组件");
+                }
+            }
         }
     }
 }
