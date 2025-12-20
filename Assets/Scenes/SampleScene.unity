@@ -322,6 +322,8 @@ MonoBehaviour:
     characters: []
     groups: []
   databaseJsonPath: Dialogue/database
+  chapterDatabase:
+    chapters: []
   dialogueUIContainer: {fileID: 0}
   defaultStoryDialogueUIPrefab: {fileID: 80107667919380115, guid: 7ff73b6e48114d0428e7aeb25ceee45f, type: 3}
   defaultBubbleDialogueUIPrefab: {fileID: 2529979338453373351, guid: b1f1afcdfe52fb945b943d8338f15435, type: 3}

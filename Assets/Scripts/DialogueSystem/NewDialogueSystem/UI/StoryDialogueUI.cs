@@ -364,6 +364,12 @@ namespace NewDialogueSystem
         {
             if (DialogueSystemManager.Instance == null) return;
 
+            // 隐藏剧情对话UI
+            if (dialoguePanel != null)
+            {
+                dialoguePanel.SetActive(false);
+            }
+
             // 获取历史UI预制体
             GameObject historyUIPrefab = DialogueSystemManager.Instance.defaultHistoryDialogueUIPrefab;
             if (historyUIPrefab == null)

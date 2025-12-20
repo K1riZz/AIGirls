@@ -3,83 +3,316 @@
   "databaseName": "主对话数据库",
   "version": "1.0",
   "nodes": [
-      {
-          "nodeID": "story_start",
-          "nodeType": 0,
-          "displayMode": 0,
-          "characterID": "pet_001",
-          "text": "欢迎进入剧情模式！这是全屏AVG对话界面。",
-          "textSpeed": 30.0,
-          "autoAdvanceTime": 0,
-          "nextNodeID": "choice_001"
-      },
-      {
-          "nodeID": "start",
-          "nodeType": 0,
-          "displayMode": 1,
-          "characterID": "pet_001",
-          "text": "你好！欢迎使用新对话系统！",
-          "textSpeed": 30.0,
-          "autoAdvanceTime": 3.0,
-          "nextNodeID": null
-      },
-      {
-          "nodeID": "choice_001",
-          "nodeType": 1,
-          "displayMode": 0,
-          "text": "请选择：",
-          "choices": [
-              {
-                  "text": "选项1",
-                  "nextNodeID": "response_001"
-              },
-              {
-                  "text": "选项2",
-                  "nextNodeID": "response_002"
-              }
-          ]
-      },
-      {
-          "nodeID": "response_001",
-          "nodeType": 0,
-          "displayMode": 0,
-          "characterID": "pet_001",
-          "text": "你选择了选项1！",
-          "nextNodeID": "end"
-      },
-      {
-          "nodeID": "response_002",
-          "nodeType": 0,
-          "displayMode": 0,
-          "characterID": "pet_001",
-          "text": "你选择了选项2！",
-          "nextNodeID": "end"
-      },
-      {
-          "nodeID": "end",
-          "nodeType": 5
-      }
+    {
+      "nodeID": "chapter01_start",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "你好，我是你的数字女孩。很高兴认识你！",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "nextNodeID": "chapter01_intro_01"
+    },
+    {
+      "nodeID": "chapter01_intro_01",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "从今天开始，我会陪伴在你身边，和你一起度过每一天。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "insertImagePaths": ["Images/ai_girl_happy"],
+      "nextNodeID": "chapter01_intro_02"
+    },
+    {
+      "nodeID": "chapter01_intro_02",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "虽然我是数字生命，但我也有自己的情感和想法。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "nextNodeID": "chapter01_choice_01"
+    },
+    {
+      "nodeID": "chapter01_choice_01",
+      "nodeType": 1,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "你对我有什么看法呢？",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "choices": [
+        {
+          "text": "我觉得你很特别，想了解更多",
+          "nextNodeID": "chapter01_response_01"
+        },
+        {
+          "text": "我想和你成为朋友",
+          "nextNodeID": "chapter01_response_02"
+        },
+        {
+          "text": "我很好奇你的世界是什么样的",
+          "nextNodeID": "chapter01_response_03"
+        }
+      ]
+    },
+    {
+      "nodeID": "chapter01_response_01",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "谢谢你这么说！我也很想了解你。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "insertImagePaths": ["Images/ai_girl_smile"],
+      "nextNodeID": "chapter01_continue_01"
+    },
+    {
+      "nodeID": "chapter01_response_02",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "太好了！我也很想和你成为朋友。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "insertImagePaths": ["Images/ai_girl_happy"],
+      "nextNodeID": "chapter01_continue_01"
+    },
+    {
+      "nodeID": "chapter01_response_03",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "我的世界很有趣呢！让我带你看看。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "insertImagePaths": ["Images/ai_girl_excited", "Images/digital_world"],
+      "nextNodeID": "chapter01_continue_01"
+    },
+    {
+      "nodeID": "chapter01_continue_01",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "你知道吗？我每天都会学习新的东西，也会记住我们之间的每一次对话。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "nextNodeID": "chapter01_continue_02"
+    },
+    {
+      "nodeID": "chapter01_continue_02",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "player",
+      "chapterID": "chapter_01",
+      "text": "真的吗？那你会记得我们今天说的话吗？",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/player_portrait",
+      "nextNodeID": "chapter01_continue_03"
+    },
+    {
+      "nodeID": "chapter01_continue_03",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "当然！你可以随时查看我们的历史对话记录。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "insertImagePaths": ["Images/history_icon"],
+      "nextNodeID": "chapter01_choice_02"
+    },
+    {
+      "nodeID": "chapter01_choice_02",
+      "nodeType": 1,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "你想做什么呢？",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "choices": [
+        {
+          "text": "我想看看你的房间",
+          "nextNodeID": "chapter01_room_scene"
+        },
+        {
+          "text": "我想和你聊天",
+          "nextNodeID": "chapter01_chat_scene"
+        },
+        {
+          "text": "我想了解你的能力",
+          "nextNodeID": "chapter01_ability_scene"
+        }
+      ]
+    },
+    {
+      "nodeID": "chapter01_room_scene",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "这就是我的房间，很温馨吧！",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/ai_girl_room",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "insertImagePaths": ["Images/room_detail_01", "Images/room_detail_02"],
+      "nextNodeID": "chapter01_room_continue"
+    },
+    {
+      "nodeID": "chapter01_room_continue",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "我每天都会整理这里，让它保持整洁。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/ai_girl_room",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "nextNodeID": "chapter01_end"
+    },
+    {
+      "nodeID": "chapter01_chat_scene",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "太好了！我很喜欢和你聊天。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "insertImagePaths": ["Images/ai_girl_chatting"],
+      "nextNodeID": "chapter01_chat_continue"
+    },
+    {
+      "nodeID": "chapter01_chat_continue",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "我们可以聊任何话题，无论是日常生活还是你的兴趣爱好。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "nextNodeID": "chapter01_end"
+    },
+    {
+      "nodeID": "chapter01_ability_scene",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "我有很多有趣的能力呢！比如我可以帮你整理信息、回答问题，还可以陪你聊天。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "insertImagePaths": ["Images/ai_girl_abilities"],
+      "nextNodeID": "chapter01_ability_continue"
+    },
+    {
+      "nodeID": "chapter01_ability_continue",
+      "nodeType": 0,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "随着我们的相处，我会不断学习和成长，为你提供更好的陪伴。",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "nextNodeID": "chapter01_end"
+    },
+    {
+      "nodeID": "chapter01_end",
+      "nodeType": 5,
+      "displayMode": 0,
+      "characterID": "ai_girl",
+      "chapterID": "chapter_01",
+      "text": "今天真是愉快的一天！期待下次和你见面。记住，你可以随时查看我们的历史对话记录哦！",
+      "textSpeed": 30.0,
+      "autoAdvanceTime": 0.0,
+      "backgroundImagePath": "Backgrounds/room_01",
+      "portraitSpritePath": "Characters/ai_girl_portrait",
+      "insertImagePaths": ["Images/ai_girl_goodbye"]
+    }
   ],
   "characters": [
-      {
-          "characterID": "pet_001",
-          "characterName": "小宠物",
-          "nameColor": {
-              "r": 1.0,
-              "g": 1.0,
-              "b": 1.0,
-              "a": 1.0
-          },
-          "textColor": {
-              "r": 1.0,
-              "g": 1.0,
-              "b": 1.0,
-              "a": 1.0
-          },
-          "voiceVolume": 1.0,
-          "voicePitch": 1.0,
-          "defaultTextSpeed": 30.0
-      }
+    {
+      "characterID": "ai_girl",
+      "characterName": "数字女孩",
+      "defaultPortraitPath": "Characters/ai_girl_portrait",
+      "nameColor": {
+        "r": 1.0,
+        "g": 0.7,
+        "b": 0.9,
+        "a": 1.0
+      },
+      "textColor": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "voiceVolume": 1.0,
+      "voicePitch": 1.0,
+      "defaultTextSpeed": 30.0
+    },
+    {
+      "characterID": "player",
+      "characterName": "你",
+      "defaultPortraitPath": "Characters/player_portrait",
+      "nameColor": {
+        "r": 0.6,
+        "g": 0.8,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "textColor": {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      },
+      "voiceVolume": 1.0,
+      "voicePitch": 1.0,
+      "defaultTextSpeed": 30.0
+    }
   ],
   "groups": []
 }

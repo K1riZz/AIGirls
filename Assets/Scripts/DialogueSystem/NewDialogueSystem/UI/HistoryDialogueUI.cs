@@ -227,6 +227,13 @@ namespace NewDialogueSystem
             {
                 historyPanel.SetActive(false);
             }
+
+            // 恢复剧情对话UI显示
+            StoryDialogueUI storyUI = FindObjectOfType<StoryDialogueUI>();
+            if (storyUI != null && storyUI.IsShowing && storyUI.dialoguePanel != null)
+            {
+                storyUI.dialoguePanel.SetActive(true);
+            }
         }
 
         /// <summary>
@@ -469,6 +476,9 @@ namespace NewDialogueSystem
                 // 格式化显示文本
                 string displayText = $"[{entry.timestamp:yyyy-MM-dd HH:mm:ss}] {entry.characterName}: {entry.text}";
                 nameText.text = displayText;
+
+                // 应用PetProfile中的字体配置
+                ApplyFontSettings(nameText);
             }
 
             // 显示背景图片
@@ -575,6 +585,9 @@ namespace NewDialogueSystem
             text.text = "历史记录条目";
             text.fontSize = 16;
             text.color = Color.white;
+
+            // 应用PetProfile中的字体配置
+            ApplyFontSettings(text);
             text.alignment = TextAlignmentOptions.TopLeft;
             text.enableWordWrapping = true;
 
@@ -630,6 +643,50 @@ namespace NewDialogueSystem
             {
                 gameObject.SetActive(true);
             }
+        }
+
+        /// <summary>
+        /// 应用PetProfile中的字体设置
+        /// </summary>
+        private void ApplyFontSettings(TextMeshProUGUI textComponent)
+        {
+            if (textComponent == null) return;
+
+            // 获取当前PetProfile
+            PetProfileSO petProfile = GetCurrentPetProfile();
+            if (petProfile == null) return;
+
+            // 应用字体资源
+            if (petProfile.historyDialogueFont != null)
+            {
+                textComponent.font = petProfile.historyDialogueFont;
+            }
+
+            // 应用字体大小（如果配置了）
+            if (petProfile.historyDialogueFontSize > 0)
+            {
+                textComponent.fontSize = petProfile.historyDialogueFontSize;
+            }
+        }
+
+        /// <summary>
+        /// 获取当前的PetProfile
+        /// </summary>
+        private PetProfileSO GetCurrentPetProfile()
+        {
+            // 优先从GameManager获取
+            if (GameManager.Instance != null && GameManager.Instance.currentPetProfile != null)
+            {
+                return GameManager.Instance.currentPetProfile;
+            }
+
+            // 其次从PetManager获取
+            if (PetManager.Instance != null && PetManager.Instance.ActivePet != null)
+            {
+                return PetManager.Instance.ActivePet.Profile;
+            }
+
+            return null;
         }
     }
 }

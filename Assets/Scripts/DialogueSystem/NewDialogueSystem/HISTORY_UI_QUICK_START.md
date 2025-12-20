@@ -157,3 +157,4 @@ historyUI?.ShowHistory();
 
 详细配置步骤请参考：`HISTORY_UI_SETUP_GUIDE.md`
 
+

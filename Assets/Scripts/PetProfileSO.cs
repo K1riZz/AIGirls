@@ -29,6 +29,10 @@ public class PetProfileSO : ScriptableObject
     public GameObject choiceDialogueUIPrefab;
     [Tooltip("历史记录UI预制体")]
     public GameObject historyUIPrefab;
+    [Tooltip("历史记录UI对话字体（如果为空则使用默认字体）")]
+    public TMPro.TMP_FontAsset historyDialogueFont;
+    [Tooltip("历史记录UI对话字体大小（如果为0则使用默认大小）")]
+    public float historyDialogueFontSize = 0f;
     [Tooltip("初始对话节点ID")]
     public string startDialogueNodeID;
     [Tooltip("点击对话节点ID")]

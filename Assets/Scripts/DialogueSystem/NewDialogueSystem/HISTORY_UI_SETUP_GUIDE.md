@@ -363,3 +363,4 @@ DialogueSystemManager.Instance.ClearHistory();
 4. **时间同步**：时间戳使用系统时间，确保系统时间正确
 5. **Canvas层级**：建议历史UI使用独立的Canvas，SortingOrder设为最高值，确保显示在最上层
 
+

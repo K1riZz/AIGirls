@@ -144,3 +144,4 @@ StoryDialogueUI (GameObject)
 
 配置完成后，玩家在剧情模式下可以通过点击历史按钮快速查看历史对话！
 
+

@@ -149,3 +149,4 @@ HistoryPanel（主面板）
 
 详细配置步骤请参考：`CHAPTER_HISTORY_UI_SETUP.md`
 
+

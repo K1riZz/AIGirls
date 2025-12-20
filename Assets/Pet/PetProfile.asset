@@ -25,7 +25,9 @@ MonoBehaviour:
   bubbleDialogueUIPrefab: {fileID: 2529979338453373351, guid: b1f1afcdfe52fb945b943d8338f15435, type: 3}
   choiceDialogueUIPrefab: {fileID: 432120278071965904, guid: 27b01ff37dbe3cf469f518967b6efa5c, type: 3}
   historyUIPrefab: {fileID: 5973731988247826212, guid: a5cd7e3b64b8d3b459373230bc7e74ae, type: 3}
-  startDialogueNodeID: story_start
+  historyDialogueFont: {fileID: 11400000, guid: 11f1b00864c55054283ec352ef076193, type: 2}
+  historyDialogueFontSize: 24
+  startDialogueNodeID: chapter01_start
   touchDialogueNodeID: start
   touchConversationDuration: 1
   idleDialogueNodeIDs:
