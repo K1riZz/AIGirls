@@ -326,6 +326,15 @@ namespace NewDialogueSystem
                         
                         OnChoiceSelected?.Invoke(choice);
                         
+                        // 记录玩家选择到历史记录
+                        if (DialogueSystemManager.Instance != null)
+                        {
+                            // 获取当前节点的章节ID（如果有）
+                            string chapterID = currentNode != null ? currentNode.chapterID : null;
+                            DialogueHistoryEntry choiceEntry = DialogueHistoryEntry.CreatePlayerChoiceEntry(choice, sessionID, chapterID);
+                            DialogueSystemManager.Instance.AddHistoryEntry(choiceEntry);
+                        }
+                        
                         // 执行选择效果
                         if (!string.IsNullOrEmpty(choice.effect))
                         {

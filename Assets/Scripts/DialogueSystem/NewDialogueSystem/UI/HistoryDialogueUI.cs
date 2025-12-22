@@ -200,6 +200,43 @@ namespace NewDialogueSystem
         {
             isShowing = true;
 
+            // 隐藏并暂停剧情对话UI
+            StoryDialogueUI storyUI = FindObjectOfType<StoryDialogueUI>();
+            if (storyUI != null && storyUI.dialoguePanel != null)
+            {
+                storyUI.dialoguePanel.SetActive(false);
+            }
+
+            // 隐藏选项UI
+            ChoiceDialogueUI choiceUI = FindObjectOfType<ChoiceDialogueUI>();
+            if (choiceUI != null && choiceUI.choicePanel != null)
+            {
+                choiceUI.choicePanel.SetActive(false);
+            }
+
+            // 暂停所有活跃的对话会话（通过隐藏所有UI实例实现）
+            if (DialogueSystemManager.Instance != null && DialogueSystemManager.Instance.dialogueUIContainer != null)
+            {
+                // 隐藏所有对话UI（Story和Choice）
+                StoryDialogueUI[] storyUIs = DialogueSystemManager.Instance.dialogueUIContainer.GetComponentsInChildren<StoryDialogueUI>(true);
+                foreach (var ui in storyUIs)
+                {
+                    if (ui != null && ui.dialoguePanel != null)
+                    {
+                        ui.dialoguePanel.SetActive(false);
+                    }
+                }
+
+                ChoiceDialogueUI[] choiceUIs = DialogueSystemManager.Instance.dialogueUIContainer.GetComponentsInChildren<ChoiceDialogueUI>(true);
+                foreach (var ui in choiceUIs)
+                {
+                    if (ui != null && ui.choicePanel != null)
+                    {
+                        ui.choicePanel.SetActive(false);
+                    }
+                }
+            }
+
             // 确保父对象激活
             EnsureParentActive();
 
@@ -233,6 +270,19 @@ namespace NewDialogueSystem
             if (storyUI != null && storyUI.IsShowing && storyUI.dialoguePanel != null)
             {
                 storyUI.dialoguePanel.SetActive(true);
+            }
+
+            // 恢复所有对话UI的交互
+            if (DialogueSystemManager.Instance != null && DialogueSystemManager.Instance.dialogueUIContainer != null)
+            {
+                StoryDialogueUI[] storyUIs = DialogueSystemManager.Instance.dialogueUIContainer.GetComponentsInChildren<StoryDialogueUI>(true);
+                foreach (var ui in storyUIs)
+                {
+                    if (ui != null && ui.IsShowing && ui.dialoguePanel != null)
+                    {
+                        ui.dialoguePanel.SetActive(true);
+                    }
+                }
             }
         }
 
@@ -474,7 +524,17 @@ namespace NewDialogueSystem
             if (nameText != null)
             {
                 // 格式化显示文本
-                string displayText = $"[{entry.timestamp:yyyy-MM-dd HH:mm:ss}] {entry.characterName}: {entry.text}";
+                string displayText;
+                if (entry.isPlayerChoice)
+                {
+                    // 玩家选择项，使用特殊格式
+                    displayText = $"{entry.characterName}: {entry.choiceText}";
+                }
+                else
+                {
+                    // 普通对话
+                    displayText = $"{entry.characterName}: {entry.text}";
+                }
                 nameText.text = displayText;
 
                 // 应用PetProfile中的字体配置

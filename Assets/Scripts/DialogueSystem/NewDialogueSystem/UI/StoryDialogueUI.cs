@@ -32,7 +32,24 @@ namespace NewDialogueSystem
         [Tooltip("历史对话按钮（点击打开历史对话UI）")]
         public Button historyButton;
 
+        [Tooltip("缩小按钮（点击后切换显示/隐藏剧情对话UI）")]
+        public Button zoomoutButton;
+
+        [Header("动画设置")]
+        [Tooltip("缩小动画时长（秒）")]
+        public float minimizeAnimationDuration = 0.3f;
+
+        [Tooltip("缩小后的目标位置（相对于屏幕右下角的偏移）")]
+        public Vector2 minimizedPosition = new Vector2(-50, 50);
+
+        [Tooltip("缩小后的目标缩放")]
+        public Vector2 minimizedScale = new Vector2(0.1f, 0.1f);
+
         private Coroutine autoAdvanceCoroutine;
+        private bool isMinimized = false; // 标记对话UI是否已缩小
+        private RectTransform dialoguePanelRect; // 对话面板的RectTransform
+        private Vector2 originalPosition; // 原始位置
+        private Vector2 originalScale; // 原始缩放
 
         public override bool IsShowing => isShowing;
         public override DialogueDisplayMode DisplayMode => DialogueDisplayMode.Story;
@@ -61,6 +78,48 @@ namespace NewDialogueSystem
             if (historyButton != null)
             {
                 historyButton.onClick.AddListener(OnHistoryButtonClicked);
+            }
+
+            // 设置缩小按钮事件
+            if (zoomoutButton != null)
+            {
+                zoomoutButton.onClick.AddListener(OnZoomoutButtonClicked);
+            }
+
+            // 获取对话面板的RectTransform并保存原始状态
+            if (dialoguePanel != null)
+            {
+                dialoguePanelRect = dialoguePanel.GetComponent<RectTransform>();
+                if (dialoguePanelRect != null)
+                {
+                    originalPosition = dialoguePanelRect.anchoredPosition;
+                    originalScale = dialoguePanelRect.localScale;
+
+                    // 将按钮移到与DialoguePanel同级（如果它们在DialoguePanel下）
+                    Transform panelParent = dialoguePanelRect.parent;
+                    if (panelParent != null)
+                    {
+                        if (historyButton != null)
+                        {
+                            RectTransform historyRect = historyButton.GetComponent<RectTransform>();
+                            if (historyRect != null && historyRect.parent == dialoguePanelRect)
+                            {
+                                // 按钮在DialoguePanel下，移到同级（保持世界空间位置）
+                                historyRect.SetParent(panelParent, true);
+                            }
+                        }
+
+                        if (zoomoutButton != null)
+                        {
+                            RectTransform zoomoutRect = zoomoutButton.GetComponent<RectTransform>();
+                            if (zoomoutRect != null && zoomoutRect.parent == dialoguePanelRect)
+                            {
+                                // 按钮在DialoguePanel下，移到同级（保持世界空间位置）
+                                zoomoutRect.SetParent(panelParent, true);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -134,6 +193,21 @@ namespace NewDialogueSystem
                     }
                 }
             }
+
+            // 自动查找缩小按钮
+            if (zoomoutButton == null)
+            {
+                Button[] buttons = GetComponentsInChildren<Button>();
+                foreach (var btn in buttons)
+                {
+                    if (btn.name.Contains("Zoomout") || btn.name.Contains("ZoomoutButton"))
+                    {
+                        zoomoutButton = btn;
+                        break;
+                    }
+                }
+            }
+
         }
 
         /// <summary>
@@ -168,10 +242,24 @@ namespace NewDialogueSystem
             // 确保父对象激活
             EnsureParentActive();
 
-            // 显示面板
+            // 显示面板并恢复原始状态
             if (dialoguePanel != null)
             {
                 dialoguePanel.SetActive(true);
+                isMinimized = false;
+                
+                // 恢复原始位置和缩放
+                if (dialoguePanelRect != null)
+                {
+                    dialoguePanelRect.anchoredPosition = originalPosition;
+                    dialoguePanelRect.localScale = originalScale;
+                }
+            }
+
+            // 确保缩小按钮显示
+            if (zoomoutButton != null)
+            {
+                zoomoutButton.gameObject.SetActive(true);
             }
 
             // 设置角色名称
@@ -240,7 +328,28 @@ namespace NewDialogueSystem
             isShowing = false;
             StopAllCoroutines();
 
-            StartCoroutine(FadeOutCoroutine());
+            StartCoroutine(HideDialogueCoroutine());
+        }
+
+        /// <summary>
+        /// 隐藏对话协程（淡出后立即隐藏面板）
+        /// </summary>
+        private IEnumerator HideDialogueCoroutine()
+        {
+            // 执行淡出动画
+            yield return StartCoroutine(FadeOutCoroutine());
+            
+            // 淡出完成后立即隐藏面板
+            if (dialoguePanel != null)
+            {
+                dialoguePanel.SetActive(false);
+            }
+
+            // 隐藏缩小按钮
+            if (zoomoutButton != null)
+            {
+                zoomoutButton.gameObject.SetActive(false);
+            }
         }
 
         private IEnumerator AutoAdvanceCoroutine(float duration)
@@ -355,6 +464,137 @@ namespace NewDialogueSystem
         private void OnHistoryButtonClicked()
         {
             OpenHistoryUI();
+        }
+
+        /// <summary>
+        /// 缩小按钮点击事件（切换显示/隐藏）
+        /// </summary>
+        private void OnZoomoutButtonClicked()
+        {
+            if (isMinimized)
+            {
+                // 当前已缩小，恢复显示
+                RestoreDialoguePanel();
+            }
+            else
+            {
+                // 当前显示中，缩小隐藏
+                MinimizeDialoguePanel();
+            }
+        }
+
+        /// <summary>
+        /// 缩小对话面板（带动画）
+        /// </summary>
+        private void MinimizeDialoguePanel()
+        {
+            if (dialoguePanel == null || dialoguePanelRect == null) return;
+
+            // 隐藏选项UI
+            ChoiceDialogueUI choiceUI = FindObjectOfType<ChoiceDialogueUI>();
+            if (choiceUI != null && choiceUI.choicePanel != null)
+            {
+                choiceUI.choicePanel.SetActive(false);
+            }
+
+            // 开始缩小动画
+            StartCoroutine(MinimizeAnimationCoroutine());
+        }
+
+        /// <summary>
+        /// 恢复对话面板（带动画）
+        /// </summary>
+        private void RestoreDialoguePanel()
+        {
+            if (dialoguePanel == null || dialoguePanelRect == null) return;
+
+            // 显示面板
+            dialoguePanel.SetActive(true);
+
+            // 开始恢复动画
+            StartCoroutine(RestoreAnimationCoroutine());
+        }
+
+        /// <summary>
+        /// 缩小动画协程
+        /// </summary>
+        private IEnumerator MinimizeAnimationCoroutine()
+        {
+            if (dialoguePanelRect == null) yield break;
+
+            Vector2 startPosition = dialoguePanelRect.anchoredPosition;
+            Vector2 startScale = dialoguePanelRect.localScale;
+
+            // 计算目标位置（屏幕右下角）
+            Canvas canvas = GetComponentInParent<Canvas>();
+            Vector2 targetPosition = minimizedPosition;
+            
+            if (canvas != null)
+            {
+                RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+                if (canvasRect != null)
+                {
+                    float canvasWidth = canvasRect.rect.width;
+                    float canvasHeight = canvasRect.rect.height;
+                    targetPosition = new Vector2(
+                        canvasWidth / 2 - minimizedPosition.x,
+                        -canvasHeight / 2 + minimizedPosition.y
+                    );
+                }
+            }
+
+            Vector2 targetScale = minimizedScale;
+            float timer = 0f;
+
+            while (timer < minimizeAnimationDuration)
+            {
+                timer += Time.deltaTime;
+                float t = timer / minimizeAnimationDuration;
+                t = t * t * (3f - 2f * t); // 缓动函数（easeInOut）
+
+                dialoguePanelRect.anchoredPosition = Vector2.Lerp(startPosition, targetPosition, t);
+                dialoguePanelRect.localScale = Vector2.Lerp(startScale, targetScale, t);
+
+                yield return null;
+            }
+
+            // 动画完成后隐藏面板
+            dialoguePanelRect.anchoredPosition = targetPosition;
+            dialoguePanelRect.localScale = targetScale;
+            dialoguePanel.SetActive(false);
+            isMinimized = true;
+        }
+
+        /// <summary>
+        /// 恢复动画协程
+        /// </summary>
+        private IEnumerator RestoreAnimationCoroutine()
+        {
+            if (dialoguePanelRect == null) yield break;
+
+            Vector2 startPosition = dialoguePanelRect.anchoredPosition;
+            Vector2 startScale = dialoguePanelRect.localScale;
+            Vector2 targetPosition = originalPosition;
+            Vector2 targetScale = originalScale;
+
+            float timer = 0f;
+
+            while (timer < minimizeAnimationDuration)
+            {
+                timer += Time.deltaTime;
+                float t = timer / minimizeAnimationDuration;
+                t = t * t * (3f - 2f * t); // 缓动函数（easeInOut）
+
+                dialoguePanelRect.anchoredPosition = Vector2.Lerp(startPosition, targetPosition, t);
+                dialoguePanelRect.localScale = Vector2.Lerp(startScale, targetScale, t);
+
+                yield return null;
+            }
+
+            // 动画完成后恢复原始状态
+            dialoguePanelRect.anchoredPosition = targetPosition;
+            dialoguePanelRect.localScale = targetScale;
+            isMinimized = false;
         }
 
         /// <summary>

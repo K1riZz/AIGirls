@@ -413,6 +413,14 @@ namespace NewDialogueSystem
         }
 
         /// <summary>
+        /// 获取所有活跃的对话会话
+        /// </summary>
+        public List<DialogueSession> GetActiveSessions()
+        {
+            return new List<DialogueSession>(activeSessions.Values);
+        }
+
+        /// <summary>
         /// 结束所有活跃的对话会话
         /// </summary>
         public void EndAllSessions()
@@ -483,21 +491,46 @@ namespace NewDialogueSystem
         // 章节信息
         public string chapterID;
 
+        // 选择项信息（如果是玩家选择）
+        public bool isPlayerChoice;
+        public string choiceText;
+
         public DialogueHistoryEntry(DialogueNode node, CharacterData character, string sessionID)
         {
             this.sessionID = sessionID;
-            this.nodeID = node.nodeID;
-            this.characterID = node.characterID;
+            this.nodeID = node != null ? node.nodeID : "unknown";
+            this.characterID = node != null ? node.characterID : null;
             this.characterName = character != null ? character.characterName : "未知";
-            this.text = node.text;
+            this.text = node != null ? node.text : "";
             this.timestamp = System.DateTime.Now;
             
             // 保存图片信息
-            this.backgroundImagePath = node.backgroundImagePath;
-            this.insertImagePaths = node.insertImagePaths != null ? new List<string>(node.insertImagePaths) : new List<string>();
+            this.backgroundImagePath = node != null ? node.backgroundImagePath : null;
+            this.insertImagePaths = node != null && node.insertImagePaths != null ? new List<string>(node.insertImagePaths) : new List<string>();
             
             // 保存章节ID
-            this.chapterID = node.chapterID;
+            this.chapterID = node != null ? node.chapterID : null;
+
+            // 默认不是玩家选择
+            this.isPlayerChoice = false;
+            this.choiceText = null;
+        }
+
+        /// <summary>
+        /// 创建玩家选择项的历史记录
+        /// </summary>
+        public static DialogueHistoryEntry CreatePlayerChoiceEntry(DialogueChoice choice, string sessionID, string chapterID = null)
+        {
+            DialogueHistoryEntry entry = new DialogueHistoryEntry(null, null, sessionID);
+            entry.nodeID = "choice";
+            entry.characterID = "player";
+            entry.characterName = "玩家";
+            entry.text = choice.text;
+            entry.isPlayerChoice = true;
+            entry.choiceText = choice.text;
+            entry.chapterID = chapterID;
+            entry.timestamp = System.DateTime.Now;
+            return entry;
         }
     }
 }
